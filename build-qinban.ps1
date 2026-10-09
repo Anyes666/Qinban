@@ -25,7 +25,10 @@ try {
       Copy-Item -LiteralPath $file -Destination (Join-Path $target $name)
     }
     Copy-Item -LiteralPath (Join-Path $root 'tools\Start-QinBan.cmd') -Destination (Join-Path $target 'Start-QinBan.cmd')
-    $evidence=Join-Path $target 'verification'; New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-    Get-ChildItem -LiteralPath (Join-Path $root ('verification\'+$version)) -File | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $evidence $_.Name) }
+    $sourceEvidence=Join-Path $root ('verification\'+$version)
+    if(Test-Path -LiteralPath $sourceEvidence -PathType Container) {
+      $evidence=Join-Path $target 'verification'; New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+      Get-ChildItem -LiteralPath $sourceEvidence -File | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $evidence $_.Name) }
+    } else { Write-Warning '未附本地验证证据：公开源码克隆不含 verification，请对新生成的运行包单独验证。' }
   }
 } finally { Pop-Location }

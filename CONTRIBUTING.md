@@ -1,60 +1,15 @@
-# Contributing
-When contributing to this repository, please first discuss the change you wish to make via issue, or any other method with me or the maintainers of this repository before making a change.
+# 参与琴伴开发
 
-This project has a [Code of Conduct](https://github.com/Jed556/AutoMidiPlayer?tab=coc-ov-file#contributor-covenant-code-of-conduct), please follow it in all your interactions with the project.
+请先通过本仓库 Issue 讨论影响较大的变更，并遵守 [行为准则](CODE_OF_CONDUCT.md)。琴伴的入口是 `QinBan.slnx` / `QinBan.Desktop`，不是上游 AutoMidiPlayer.WPF。
 
-## Pull Request Process
+## 提交前
 
-1. Do not include the build itself where the project is cleaned using `dotnet clean`.
-2. Update the README.md with details of changes to the project, new features, and others if applicable.
-3. Increase the version number of the project and the README.md to the new version that this
-   Pull Request would represent. The versioning scheme we use is [SemVer](http://semver.org/).
+1. 阅读 `AGENTS.md`、相关实现、[使用说明](README-QINBAN.md)和[来源与许可](QINBAN-NOTICES.md)。
+2. 只修改与需求相关的代码，保留上游归属；不顺便改动只读参考工程。
+3. 按[构建指南](docs/DEVELOPMENT.md)构建和运行核心测试；行为变更补充测试。界面测试使用 `--ui-test` 与独立 `--data-dir`，禁止真实游戏按键输出。
+4. PR 写明修改内容、执行的检查、失败或未验证项。软件级测试不代表实际游戏或曲谱质量验收。
+5. 不提交 `UserData`、来源归档、商业曲谱、数据库、编译缓存、凭据或大体积验证输出。
 
-## Build
-If you just want to run the program, there are precompiled releases that can be found in [here](https://github.com/Jed556/AutoMidiPlayer/releases).
+新增曲谱须有来源、作品 / 版本身份、明确权利范围和可验证时序。代码的 GPL 许可不等于曲谱清权；热门歌名、数据集许可证或能解析都不是充分的再分发依据。
 
-### Requirements
-* [Git](https://git-scm.com) for cloning the project
-* [.NET 10.0](https://dotnet.microsoft.com/download/dotnet/10.0) SDK
-
-#### Publish a single binary for Windows
-```bat
-git clone https://github.com/Jed556/AutoMidiPlayer.git
-cd AutoMidiPlayer
-
-dotnet publish -r win-x86 -c Release -o bin\publish --self-contained false -p:PublishSingleFile=true
-```
-> For other runtimes, visit the [RID Catalog](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog) and change the runtime value.
-
-#### Build the project (not necessary if you published)
-```bat
-git clone https://github.com/Jed556/AutoMidiPlayer.git
-cd AutoMidiPlayer
-
-dotnet build
-```
-
-#### Publish the project using defaults
-```bat
-git clone https://github.com/Jed556/AutoMidiPlayer.git
-cd AutoMidiPlayer
-
-dotnet publish
-```
-
-### Notes
-If you want to build using the [.Net Core 3.1 SDK](https://dotnet.microsoft.com/download), you need to make a few changes to the project files.
-
-#### Project SDK
-Change the Project SDK of `AutoMidiPlayer.WPF.csproj` into `Microsoft.NET.Sdk.WindowsDesktop`.
-```diff
-- <Project Sdk="Microsoft.NET.Sdk">
-+ <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-```
-
-### Language Version
-Change the `LangVersion` of both projects into `preview`.
-```diff
-- <LangVersion>latest</LangVersion>
-+ <LangVersion>preview</LangVersion>
-```
+依赖更新保留人工审查，不自动批准、解决冲突或合并。上游原贡献指南归档于 `docs/history/UPSTREAM-CONTRIBUTING.md`，其中下载与构建说明不适用于琴伴。

@@ -6,17 +6,17 @@ on:
         description: Delete repository artifacts
         required: true
         type: boolean
-        default: true
+        default: false
       cleanup_workflow_runs:
         description: Delete completed runs of the selected workflow name
         required: true
         type: boolean
-        default: true
+        default: false
       workflow_name:
         description: Workflow name used for run cleanup
         required: true
         type: string
-        default: Dependabot Auto-Merge
+        default: QinBan Build and Core Tests
 
 permissions:
   actions: write

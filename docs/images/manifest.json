@@ -1,0 +1,35 @@
+{
+  "capturedOn": "2026-10-10",
+  "product": "QinBan",
+  "version": "0.4.2",
+  "executable": "QinBan-0.4.2-smooth-scroll-win-x64/QinBan.exe",
+  "executableSha256": "fd021e49c5db5b47228b2c95ed30eef55dc92e7628b591f33021bf5324697eaf",
+  "captureMethod": "WPF RenderTargetBitmap in --ui-test with isolated --data-dir",
+  "coldStartExpected": 6332,
+  "coldStartActual": 6332,
+  "uiCases": 69,
+  "uiFailures": 0,
+  "nativeSendAttempts": 0,
+  "notVerified": [
+    "source rebuild in this run",
+    "physical game performance",
+    "per-score musical review",
+    "redistribution rights"
+  ],
+  "screenshots": [
+    {
+      "file": "qinban-library.png",
+      "source": "product-capture/preview.png",
+      "scene": "fresh library, plain theme, local 6332 catalogue",
+      "extraTestScores": 0,
+      "sha256": "20b905f34a85bb963fed180ea5b0186aab710e204e72f8702fcf76833aea5a82"
+    },
+    {
+      "file": "qinban-parameters.png",
+      "source": "ui/parameters-drawer-white.png",
+      "scene": "teaching excerpt and generated white background; isolated UI test",
+      "extraTestScores": 3,
+      "sha256": "a88e42847cdbf76e38efdef25aa3167a3f01ca81df91a74a9517c03e41c0061a"
+    }
+  ]
+}

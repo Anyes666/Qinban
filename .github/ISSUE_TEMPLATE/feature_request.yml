@@ -1,24 +1,20 @@
-name: "Feature Request"
-description: "Suggest a new feature for Auto MIDI Player."
-title: "short description"
-labels: [feat]
+name: 琴伴功能建议
+description: 提出琴伴的产品使用场景与改进建议。
+title: '[建议] '
 body:
-  - type: markdown
-    attributes:
-      value: "Thank you for suggesting a new feature! Please fill out the form below."
   - type: textarea
-    id: why-needed
+    id: scenario
     attributes:
-      label: "Why is this needed?"
-      description: "Why is this feature needed?"
-      placeholder: "Describe the need or problem this feature addresses."
+      label: 你想解决什么使用问题
+      description: 描述目前的操作流程和困难，而不只是列出功能名称。
     validations:
       required: true
   - type: textarea
-    id: proposed-solution
+    id: proposal
     attributes:
-      label: "Proposed solution"
-      description: "Describe your proposed solution or approach."
-      placeholder: "How do you suggest implementing this?"
+      label: 期望的操作方式
     validations:
       required: false
+  - type: markdown
+    attributes:
+      value: 曲库建议请说明作品、歌手、版本、合法谱源及权利范围；不建议绕过游戏安全机制或后台输入限制。
