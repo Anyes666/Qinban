@@ -1,0 +1,603 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media;
+using AutoMidiPlayer.Data;
+using AutoMidiPlayer.Data.Properties;
+using PropertyChanged;
+using Stylet;
+using StyletIoC;
+using MidiFile = AutoMidiPlayer.Data.Midi.MidiFile;
+using AutoMidiPlayer.WPF.Core;
+using AutoMidiPlayer.WPF.Services;
+
+namespace AutoMidiPlayer.WPF.ViewModels;
+
+public class QueueViewModel : Screen
+{
+    public enum LoopMode
+    {
+        Off,    // Stop when queue finishes
+        Queue,  // Loop back to first song when queue finishes
+        Track   // Loop current song
+    }
+
+    private static readonly Settings Settings = Settings.Default;
+    private readonly IContainer _ioc;
+    private readonly IEventAggregator _events;
+    private readonly MainWindowViewModel _main;
+
+    public QueueViewModel(IContainer ioc, MainWindowViewModel main)
+    {
+        _ioc = ioc;
+        _events = ioc.Get<IEventAggregator>();
+        _main = main;
+
+        // Load saved queue settings
+        Shuffle = Settings.QueueShuffle;
+        Loop = (LoopMode)Settings.QueueLoopMode;
+
+        // Forward IsPlaying changes from Playback so bindings update
+        _main.PlaybackControls.PlaybackStateChanged += HandlePlaybackStateChanged;
+
+        SystemThemeService.ThemeResourcesChanged += RefreshThemeDependentState;
+    }
+
+    private void RefreshThemeDependentState()
+    {
+        Application.Current?.Dispatcher?.BeginInvoke(new Action(() =>
+        {
+            NotifyOfPropertyChange(() => ShuffleStateColor);
+            NotifyOfPropertyChange(() => LoopStateColor);
+        }));
+    }
+
+    private void HandlePlaybackStateChanged(object? sender, EventArgs e)
+    {
+        // Notify that Playback changed so bindings to Playback.IsPlaying re-evaluate
+        // Use Dispatcher to avoid collection enumeration issues
+        System.Windows.Application.Current?.Dispatcher?.BeginInvoke(() =>
+        {
+            NotifyOfPropertyChange(() => Playback);
+        });
+    }
+
+    private BindableCollection<MidiFile> _filteredTracks = new();
+
+    public BindableCollection<MidiFile> FilteredTracks
+    {
+        get => _filteredTracks;
+        private set => SetAndNotify(ref _filteredTracks, value);
+    }
+
+    public BindableCollection<MidiFile> Tracks { get; } = new();
+
+    public bool Shuffle { get; set; }
+
+    public IEnumerable<string> TrackTitles => Tracks.Select(t => t.Title);
+
+    public LoopMode Loop { get; set; } = LoopMode.Queue;
+
+    public MidiFile? OpenedFile { get; set; }
+
+    public MidiFile? SelectedFile { get; set; }
+
+    public TrackViewModel TrackView => _main.TrackView;
+
+    public Services.PlaybackControlsService Playback => _main.PlaybackControls;
+
+    public SolidColorBrush ShuffleStateColor => Shuffle
+        ? new SolidColorBrush(AccentColorHelper.GetAccentColor())
+        : (SolidColorBrush)Application.Current.FindResource("TextFillColorPrimaryBrush");
+
+    public Stack<MidiFile> History { get; } = new();
+
+    public string LoopStateString =>
+        Loop switch
+        {
+            LoopMode.Off => "\xF5E7",    // No repeat icon
+            LoopMode.Queue => "\xE8EE",  // Repeat all icon
+            LoopMode.Track => "\xE8ED",  // Repeat one icon
+            _ => string.Empty
+        };
+
+    public string LoopSvgSource =>
+        Loop switch
+        {
+            LoopMode.Off => "/Icons/Controls/Repeat.svg",
+            LoopMode.Queue => "/Icons/Controls/Repeat.svg",
+            LoopMode.Track => "/Icons/Controls/Repeat One.svg",
+            _ => "/Icons/Controls/Repeat.svg"
+        };
+
+    public Geometry LoopGeometry =>
+        Loop switch
+        {
+            LoopMode.Track => (Geometry)Application.Current.FindResource("RepeatOneIconGeometry"),
+            _ => (Geometry)Application.Current.FindResource("RepeatIconGeometry")
+        };
+
+    public SolidColorBrush LoopStateColor =>
+        Loop switch
+        {
+            LoopMode.Off => (SolidColorBrush)Application.Current.FindResource("TextFillColorPrimaryBrush"),
+            _ => new SolidColorBrush(AccentColorHelper.GetAccentColor())
+        };
+
+    public string LoopTooltip =>
+        Loop switch
+        {
+            LoopMode.Off => "Loop: Off",
+            LoopMode.Queue => "Loop: Queue",
+            LoopMode.Track => "Loop: Track",
+            _ => "Loop"
+        };
+
+    public bool IsLoopActive => Loop != LoopMode.Off;
+
+    public string? FilterText { get; set; }
+
+    private BindableCollection<MidiFile> ShuffledTracks { get; set; } = new();
+
+    public BindableCollection<MidiFile> GetPlaylist() => Shuffle ? ShuffledTracks : Tracks;
+
+    /// <summary>
+    /// Get the next song to play.
+    /// </summary>
+    /// <param name="userInitiated">True if user clicked Next, false if auto-triggered by song finish</param>
+    /// <returns>The next song to play, or null if none</returns>
+    public MidiFile? Next(bool userInitiated = true)
+    {
+        var playlist = GetPlaylist().ToList();
+        if (OpenedFile is null) return playlist.FirstOrDefault();
+
+        switch (Loop)
+        {
+            case LoopMode.Off:
+                // Off mode: play through queue once, stop at end
+                break; // Fall through to get next song (returns null at end)
+            case LoopMode.Track:
+                // Track loop mode:
+                // - If song finished naturally (not user initiated), loop same song
+                // - If user clicked Next, go to next song (which will then loop when it finishes)
+                if (!userInitiated)
+                    return OpenedFile;
+                break; // Fall through to get next song
+            case LoopMode.Queue:
+                // Queue loop: wrap to first song when reaching end
+                var nextIndex = playlist.IndexOf(OpenedFile) + 1;
+                return playlist.ElementAtOrDefault(nextIndex % playlist.Count);
+        }
+
+        var next = playlist.IndexOf(OpenedFile) + 1;
+        return playlist.ElementAtOrDefault(next);
+    }
+
+    public void AddFiles(IEnumerable<MidiFile> files)
+    {
+        var added = false;
+        foreach (var file in files)
+        {
+            if (!Tracks.Contains(file))
+            {
+                Tracks.Add(file);
+                if (Shuffle) ShuffledTracks.Add(file);
+                added = true;
+            }
+        }
+
+        if (added) OnQueueModified();
+
+        var next = Next();
+        if (OpenedFile is null && Tracks.Count > 0 && next is not null)
+            _events.Publish(next);
+    }
+
+    public void AddFile(MidiFile file)
+    {
+        if (!Tracks.Contains(file))
+        {
+            Tracks.Add(file);
+            if (Shuffle) ShuffledTracks.Add(file);
+            OnQueueModified();
+        }
+    }
+
+    public void PlayFromQueue(MidiFile? file)
+    {
+        if (file is not null)
+        {
+            _events.Publish(file);
+        }
+    }
+
+    public async void PlayPauseFromQueue(MidiFile? file)
+    {
+        if (file is null) return;
+
+        try
+        {
+            // If this is the currently opened file, toggle play/pause
+            if (OpenedFile == file)
+            {
+                await _main.PlaybackControls.PlayPause();
+            }
+            else
+            {
+                // Load the new file and auto-play it — fully awaited, no race
+                await _main.PlaybackEngine.LoadFileAsync(file, autoPlay: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Log($"Error in PlayPauseFromQueue for '{file.Path}': {ex.Message}");
+            Logger.LogException(ex);
+        }
+    }
+
+    public void ClearQueue()
+    {
+        // Clearing the queue should always stop current playback.
+        if (OpenedFile is not null || _main.PlaybackEngine.Playback is not null)
+        {
+            _main.PlaybackControls.CloseFile();
+            ClearSavedSong();
+            _main.PlaybackControls.UpdateButtons();
+        }
+
+        Tracks.Clear();
+        History.Clear();
+
+        OpenedFile = null;
+        SelectedFile = null;
+        SaveQueue();
+        ApplyFilter();
+    }
+
+    public async void RemoveSong(IEnumerable<MidiFile>? selectedFiles)
+    {
+        // Get files to remove - either multi-select or single select. The parameter may be null when
+        // invoked via a command without a CommandParameter, so guard against that.
+        var filesToRemove = (selectedFiles != null && selectedFiles.Any())
+            ? selectedFiles.ToList()
+            : (SelectedFile is not null ? new List<MidiFile> { SelectedFile } : new List<MidiFile>());
+
+        if (filesToRemove.Count == 0)
+            return;
+
+        var removedSongIds = filesToRemove
+            .Select(file => file.Song.Id)
+            .ToHashSet();
+
+        // Determine whether the currently opened song is being removed and find its successor
+        // BEFORE modifying the playlist, so index-based lookups are still valid.
+        MidiFile? nextSong = null;
+        var isCurrentSongRemoved = OpenedFile is not null && removedSongIds.Contains(OpenedFile.Song.Id);
+        if (isCurrentSongRemoved)
+        {
+            // Find the next song that isn't being removed.
+            var playlist = GetPlaylist().ToList();
+            var currentIndex = playlist.IndexOf(OpenedFile!);
+            for (var i = currentIndex + 1; i < playlist.Count; i++)
+            {
+                if (!removedSongIds.Contains(playlist[i].Song.Id))
+                {
+                    nextSong = playlist[i];
+                    break;
+                }
+            }
+
+            // If no successor found and loop is Queue, wrap around to the beginning.
+            if (nextSong is null && Loop == LoopMode.Queue)
+            {
+                for (var i = 0; i < currentIndex; i++)
+                {
+                    if (!removedSongIds.Contains(playlist[i].Song.Id))
+                    {
+                        nextSong = playlist[i];
+                        break;
+                    }
+                }
+            }
+
+            // Close current playback before modifying the queue.
+            _main.PlaybackControls.CloseFile();
+            ClearSavedSong();
+            _main.PlaybackControls.UpdateButtons();
+        }
+
+        foreach (var track in Tracks.Where(t => removedSongIds.Contains(t.Song.Id)).ToList())
+        {
+            Tracks.Remove(track);
+        }
+
+        if (SelectedFile is not null && removedSongIds.Contains(SelectedFile.Song.Id))
+            SelectedFile = null;
+
+        if (OpenedFile is not null && removedSongIds.Contains(OpenedFile.Song.Id))
+            OpenedFile = null;
+
+        if (removedSongIds.Count > 0)
+        {
+            RemoveSongsFromHistory(removedSongIds);
+        }
+
+        OnQueueModified();
+
+        // Auto-play the next song only in Queue loop mode.
+        // In Off and Track modes, just stop (the user expects removal to not auto-advance).
+        if (isCurrentSongRemoved && nextSong is not null && Loop == LoopMode.Queue)
+        {
+            await _main.PlaybackEngine.LoadFileAsync(nextSong, autoPlay: true);
+        }
+    }
+
+    public async Task DeleteSongs(IEnumerable<MidiFile> selectedFiles)
+    {
+        var filesToDelete = selectedFiles.Any()
+            ? selectedFiles.ToList()
+            : (SelectedFile is not null ? new List<MidiFile> { SelectedFile } : new List<MidiFile>());
+
+        await _main.SongSettings.DeleteSongsAsync(filesToDelete);
+    }
+
+    public void RemoveSongsFromHistory(IReadOnlyCollection<Guid> songIds)
+    {
+        if (songIds.Count == 0 || History.Count == 0)
+            return;
+
+        // Preserve chronological order while removing stale entries.
+        var pruned = History
+            .Reverse()
+            .Where(file => !songIds.Contains(file.Song.Id))
+            .ToList();
+
+        History.Clear();
+        foreach (var file in pruned)
+        {
+            History.Push(file);
+        }
+    }
+
+    public async Task EditSong(MidiFile file)
+    {
+        await _main.SongSettings.EditSongAsync(file, source: "queue-view");
+    }
+
+    public void MoveUp()
+    {
+        if (SelectedFile is null) return;
+        
+        var playlist = GetPlaylist();
+        var index = playlist.IndexOf(SelectedFile);
+        if (index > 0)
+        {
+            playlist.Move(index, index - 1);
+            OnQueueModified();
+        }
+    }
+
+    public void MoveDown()
+    {
+        if (SelectedFile is null) return;
+
+        var playlist = GetPlaylist();
+        var index = playlist.IndexOf(SelectedFile);
+        if (index < playlist.Count - 1)
+        {
+            playlist.Move(index, index + 1);
+            OnQueueModified();
+        }
+    }
+
+    public void Previous()
+    {
+        while (History.Count > 1)
+        {
+            History.Pop();
+            var candidate = History.Pop();
+
+            if (Tracks.Any(track => track.Song.Id == candidate.Song.Id))
+            {
+                _events.Publish(candidate);
+                return;
+            }
+        }
+    }
+
+    public void ToggleLoop()
+    {
+        var loopState = (int)Loop;
+        var loopStates = Enum.GetValues(typeof(LoopMode)).Length;
+
+        var newState = (loopState + 1) % loopStates;
+        Loop = (LoopMode)newState;
+
+        // Save to settings
+        Settings.QueueLoopMode = (int)Loop;
+        Settings.Save();
+
+        NotifyOfPropertyChange(() => IsLoopActive);
+    }
+
+    public void ToggleShuffle()
+    {
+        Shuffle = !Shuffle;
+
+        if (Shuffle)
+            ShuffledTracks = new(Tracks.OrderBy(_ => Guid.NewGuid()));
+
+        // Save to settings
+        Settings.QueueShuffle = Shuffle;
+        Settings.Save();
+
+        RefreshQueue();
+    }
+
+    /// <summary>
+    /// Save queue song IDs to settings
+    /// </summary>
+    public void SaveQueue()
+    {
+        var songIds = Tracks.Select(t => t.Song.Id.ToString());
+        Settings.QueueSongIds = string.Join(",", songIds);
+        Settings.Save();
+    }
+
+    /// <summary>
+    /// Restore queue from saved song IDs
+    /// </summary>
+    public void RestoreQueue(IEnumerable<MidiFile> availableTracks)
+    {
+        if (string.IsNullOrEmpty(Settings.QueueSongIds)) return;
+
+        var savedIds = Settings.QueueSongIds
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(id => Guid.TryParse(id, out var guid) ? guid : Guid.Empty)
+            .Where(g => g != Guid.Empty)
+            .ToList();
+
+        var trackDict = availableTracks.ToDictionary(t => t.Song.Id);
+
+        foreach (var id in savedIds)
+        {
+            if (trackDict.TryGetValue(id, out var track) && !Tracks.Contains(track))
+            {
+                Tracks.Add(track);
+            }
+        }
+
+        if (Shuffle)
+            ShuffledTracks = new(Tracks.OrderBy(_ => Guid.NewGuid()));
+
+        RefreshQueue();
+        ApplyFilter();
+    }
+
+    /// <summary>
+    /// Save the currently playing song ID and position
+    /// </summary>
+    public void SaveCurrentSong(double positionSeconds)
+    {
+        if (OpenedFile is not null)
+        {
+            Settings.CurrentSongId = OpenedFile.Song.Id.ToString();
+            Settings.CurrentSongPosition = positionSeconds;
+        }
+        else
+        {
+            Settings.CurrentSongId = string.Empty;
+            Settings.CurrentSongPosition = 0;
+        }
+        Settings.Save();
+    }
+
+    /// <summary>
+    /// Restore the previously playing song from saved state
+    /// Returns the position in seconds to seek to, or null if no song to restore
+    /// </summary>
+    public double? RestoreCurrentSong(IEnumerable<MidiFile> availableTracks)
+    {
+        if (string.IsNullOrEmpty(Settings.CurrentSongId)) return null;
+
+        if (!Guid.TryParse(Settings.CurrentSongId, out var savedId))
+        {
+            ClearSavedSong();
+            return null;
+        }
+
+        var track = availableTracks.FirstOrDefault(t => t.Song.Id == savedId);
+        if (track is null)
+        {
+            // Song no longer exists, clear persistence
+            ClearSavedSong();
+            return null;
+        }
+
+        // Make sure the song is in the queue
+        if (!Tracks.Contains(track))
+        {
+            Tracks.Insert(0, track);
+            RefreshQueue();
+        }
+
+        OpenedFile = track;
+        _events.Publish(track);
+
+        return Settings.CurrentSongPosition;
+    }
+
+    /// <summary>
+    /// Clear the saved song persistence
+    /// </summary>
+    public void ClearSavedSong()
+    {
+        Settings.CurrentSongId = string.Empty;
+        Settings.CurrentSongPosition = 0;
+        Settings.Save();
+    }
+
+    /// <summary>
+    /// Called when queue is modified to auto-save
+    /// </summary>
+    public void OnQueueModified()
+    {
+        SaveQueue();
+        RefreshQueue();
+        ApplyFilter();
+    }
+
+    private void RefreshQueue()
+    {
+        var playlist = GetPlaylist();
+        foreach (var file in playlist)
+        {
+            file.Position = playlist.IndexOf(file);
+        }
+    }
+
+    /// <summary>
+    /// Apply filter to create a new FilteredTracks collection
+    /// </summary>
+    public void ApplyFilter()
+    {
+        var searchTerm = FilterText?.Trim() ?? string.Empty;
+        var playlist = GetPlaylist();
+
+        IEnumerable<MidiFile> filtered = string.IsNullOrWhiteSpace(searchTerm)
+            ? playlist
+            : playlist.Where(t =>
+                t.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                || (!string.IsNullOrWhiteSpace(t.Song.Album) && t.Song.Album.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                || (!string.IsNullOrWhiteSpace(t.Song.Artist) && t.Song.Artist.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+
+        FilteredTracks = new BindableCollection<MidiFile>(filtered);
+    }
+
+    /// <summary>
+    /// Called by PropertyChanged.Fody when FilterText changes
+    /// </summary>
+    private void OnFilterTextChanged() => ApplyFilter();
+
+    /// <summary>
+    /// Refresh the currently playing song in the list to reflect property changes
+    /// </summary>
+    public void RefreshCurrentSong()
+    {
+        // Force UI to refresh by recreating the filtered collection
+        // This ensures the ListView re-renders items when Song properties change
+        System.Windows.Application.Current?.Dispatcher?.BeginInvoke(() =>
+        {
+            ApplyFilter();
+        });
+    }
+
+    protected override void OnDeactivate()
+    {
+        base.OnDeactivate();
+        // Clear the semi-active (single-clicked) row when switching tabs
+        SelectedFile = null;
+    }
+}

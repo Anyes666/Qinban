@@ -1,0 +1,8 @@
+﻿artifacts/
+.cli-home/
+.nuget/
+.tmp/
+validation/
+*.log
+protected-before.json
+protected-after.json

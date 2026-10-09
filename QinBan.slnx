@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="QinBan.Core/QinBan.Core.csproj" />
+  <Project Path="QinBan.Desktop/QinBan.Desktop.csproj" />
+  <Project Path="QinBan.Tests/QinBan.Tests.csproj" />
+  <Project Path="QinBan.LibraryTools/QinBan.LibraryTools.csproj" />
+</Solution>

@@ -1,0 +1,167 @@
+<UserControl x:Class="AutoMidiPlayer.WPF.Controls.PlayerControlPanel.MainPlaybackControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:s="https://github.com/canton7/Stylet"
+             xmlns:controls="clr-namespace:AutoMidiPlayer.WPF.Controls"
+             xmlns:seekbar="clr-namespace:AutoMidiPlayer.WPF.Controls.PlayerControlPanel">
+    <StackPanel Panel.ZIndex="2"
+                HorizontalAlignment="Center">
+        <!-- Control Buttons -->
+        <Grid HorizontalAlignment="Center"
+              Grid.IsSharedSizeScope="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"
+                                  SharedSizeGroup="TransportSide"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"
+                                  SharedSizeGroup="TransportSide"/>
+            </Grid.ColumnDefinitions>
+
+            <controls:SimpleStackPanel Grid.Column="0"
+                                       Orientation="Horizontal"
+                                       HorizontalAlignment="Right"
+                                       Spacing="12">
+                    <Grid>
+                        <controls:Button x:Name="PedalButton" Variant="GhostDimmed"
+                                         s:View.ActionTarget="{Binding InstrumentView}"
+                                         Command="{s:Action ToggleEnableSustainForInstrument}"
+                                         IsActive="{Binding InstrumentView.EnableSustainForInstrument}"
+                                         IsEnabled="{Binding InstrumentView.SupportsSustainPedals}"
+                                         Padding="8"
+                                         MouseEnter="PedalButton_MouseEnter"
+                                         MouseLeave="PedalButton_MouseLeave">
+                            <Viewbox Width="15" Height="15" Style="{StaticResource PlayerControlViewboxIcon}">
+                                <controls:PedalIcon AccentStrokeThickness="14"
+                                                    IsSoftActive="{Binding DataContext.PlaybackControls.IsUnaCordaHeld, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    IsSostenutoActive="{Binding DataContext.PlaybackControls.IsSostenutoHeld, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    IsSustainActive="{Binding DataContext.PlaybackControls.IsSustainHeld, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Viewbox>
+                        </controls:Button>
+
+                        <Popup x:Name="PedalPopup" PlacementTarget="{Binding ElementName=PedalButton}" Placement="Top" HorizontalOffset="-22" VerticalOffset="6" AllowsTransparency="True" PopupAnimation="None">
+                            <controls:PedalStatusPopup x:Name="PedalPopupContent"
+                                                       IsSoftActive="{Binding DataContext.PlaybackControls.IsUnaCordaHeld, ElementName=PedalButton}"
+                                                       IsSostenutoActive="{Binding DataContext.PlaybackControls.IsSostenutoHeld, ElementName=PedalButton}"
+                                                       IsSustainActive="{Binding DataContext.PlaybackControls.IsSustainHeld, ElementName=PedalButton}"
+                                                       IsActive="{Binding IsActive, ElementName=PedalButton}" />
+                        </Popup>
+                    </Grid>
+
+                <controls:Button Variant="GhostDimmed"
+                                 s:View.ActionTarget="{Binding TrackView.Queue}"
+                                 Command="{s:Action ToggleShuffle}"
+                                 IsActive="{Binding TrackView.Queue.Shuffle}"
+                                 Padding="8"
+                                 ToolTip="Shuffle">
+                    <Path Data="{StaticResource ShuffleIconGeometry}"
+                          Fill="{Binding TrackView.Queue.ShuffleStateColor}"
+                          Style="{StaticResource PlayerControlIcon}"
+                          Width="14"
+                          Height="14"/>
+                </controls:Button>
+
+                <controls:Button Variant="GhostDimmed"
+                                 s:View.ActionTarget="{Binding PlaybackControls}"
+                                 Command="{s:Action Previous}"
+                                 IsHitTestVisible="{Binding PlaybackControls.CanHitPrevious}"
+                                 Padding="8"
+                                 ToolTip="Previous">
+                    <Path Data="{StaticResource PreviousIconGeometry}"
+                          Fill="{DynamicResource TextFillColorPrimaryBrush}"
+                          Stretch="Uniform"
+                          Width="14"
+                          Height="14"/>
+                </controls:Button>
+            </controls:SimpleStackPanel>
+
+            <Button Grid.Column="1"
+                    Margin="12,0"
+                    s:View.ActionTarget="{Binding PlaybackControls}"
+                    Command="{s:Action PlayPause}"
+                    IsHitTestVisible="{Binding PlaybackControls.CanHitPlayPause}"
+                    Style="{StaticResource PlayPauseButton}"
+                    ToolTip="{Binding PlaybackControls.PlayPauseTooltip}">
+                <Path Data="{Binding PlaybackControls.PlayPauseGeometry}"
+                      Fill="{DynamicResource ApplicationBackgroundBrush}"
+                      Style="{StaticResource PlayerControlIcon}"
+                      Margin="1,0,0,0"
+                      Width="14"
+                      Height="14"/>
+            </Button>
+
+            <controls:SimpleStackPanel Grid.Column="2"
+                                       Orientation="Horizontal"
+                                       HorizontalAlignment="Left"
+                                       Spacing="12">
+                <controls:Button Variant="GhostDimmed"
+                                 s:View.ActionTarget="{Binding PlaybackControls}"
+                                 Command="{s:Action Next}"
+                                 IsHitTestVisible="{Binding PlaybackControls.CanHitNext}"
+                                 Padding="8"
+                                 ToolTip="Next">
+                    <Path Data="{StaticResource NextIconGeometry}"
+                          Fill="{DynamicResource TextFillColorPrimaryBrush}"
+                          Stretch="Uniform"
+                          Width="14"
+                          Height="14"/>
+                </controls:Button>
+
+                <controls:Button Variant="GhostDimmed"
+                                 s:View.ActionTarget="{Binding TrackView.Queue}"
+                                 Command="{s:Action ToggleLoop}"
+                                 IsActive="{Binding TrackView.Queue.IsLoopActive}"
+                                 Padding="8"
+                                 ToolTip="{Binding TrackView.Queue.LoopTooltip}">
+                    <Path Data="{Binding TrackView.Queue.LoopGeometry}"
+                          Fill="{Binding TrackView.Queue.LoopStateColor}"
+                          Style="{StaticResource PlayerControlIcon}"
+                          VerticalAlignment="Bottom"
+                          Width="14"
+                          Height="14"/>
+                </controls:Button>
+
+                <controls:Button Variant="GhostDimmed"
+                                 s:View.ActionTarget="{Binding PlaybackControls}"
+                                 Command="{s:Action ToggleListenMode}"
+                                 IsActive="{Binding PlaybackControls.IsListenModeEnabled}"
+                                 Padding="8"
+                                 ToolTip="{Binding PlaybackControls.ListenModeTooltip}"
+                                 Icon="Headphones24"
+                                 IconFontSize="16"/>
+            </controls:SimpleStackPanel>
+        </Grid>
+
+        <!-- Progress Bar -->
+        <Grid Margin="0,8,0,0"
+              MinWidth="400">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Opacity="0.7"
+                       Text="{Binding PlaybackControls.DisplayCurrentTime, StringFormat=m\\:ss}"/>
+            <seekbar:Seekbar Grid.Column="1"
+                              Margin="8,0"
+                              IsEnabled="{Binding PlaybackControls.HasSongOpen}"
+                              Value="{Binding PlaybackControls.SongPosition}"
+                              PreviewValue="{Binding PlaybackControls.DisplaySongPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              IsPreviewActive="{Binding PlaybackControls.IsSeekPreviewActive, Mode=TwoWay}"
+                              Maximum="{Binding PlaybackControls.MaximumTime.TotalSeconds}"
+                              IsSelectionRangeEnabled="True"
+                              SelectionStart="0"
+                              SelectionEnd="{Binding PlaybackControls.SongPosition, Mode=OneWay}"
+                              SliderStyle="{StaticResource ProgressSlider}"/>
+            <TextBlock Grid.Column="2"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Opacity="0.7"
+                       Text="{Binding PlaybackControls.DisplayRemainingTime, StringFormat=m\\:ss}"/>
+        </Grid>
+    </StackPanel>
+</UserControl>

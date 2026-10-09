@@ -1,0 +1,402 @@
+<UserControl
+    x:Class="AutoMidiPlayer.WPF.Views.OnlineMidiView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    mc:Ignorable="d"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:s="https://github.com/canton7/Stylet"
+    xmlns:viewModels="clr-namespace:AutoMidiPlayer.WPF.ViewModels"
+    xmlns:midishow="clr-namespace:AutoMidiPlayer.WPF.Services.MidiShow" xmlns:onlinemidi="clr-namespace:AutoMidiPlayer.WPF.Services.OnlineMidi"
+    xmlns:converters="clr-namespace:AutoMidiPlayer.WPF.Converters"
+    xmlns:controls="clr-namespace:AutoMidiPlayer.WPF.Controls"
+    xmlns:previewPlayer="clr-namespace:AutoMidiPlayer.WPF.Controls.MidiPreviewPlayer"
+    xmlns:seekbar="clr-namespace:AutoMidiPlayer.WPF.Controls.PlayerControlPanel"
+    xmlns:button="clr-namespace:AutoMidiPlayer.WPF.Controls.SelectorPopupButton.Button"
+    d:DataContext="{d:DesignInstance Type=viewModels:OnlineMidiViewModel}">
+
+    <UserControl.Resources>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        <converters:UrlToCachedImageConverter x:Key="UrlToCachedImageConverter"/>
+
+        <!-- Icons inside buttons don't inherit the button foreground in this app, so they
+             default to the accent (green). Force a neutral foreground; icons that need a
+             colour (gold star, green check) set Foreground explicitly and override this. -->
+        <Style TargetType="ui:SymbolIcon">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </Style>
+        <Style x:Key="StatChip" TargetType="Border">
+            <Setter Property="Background" Value="{ui:ThemeResource ControlFillColorSecondaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{ui:ThemeResource ControlElevationBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+        </Style>
+
+
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ============ Toolbar: row 0 = search + account, row 1 = filters ============ -->
+        <Grid Grid.Row="0"
+              Margin="0,0,0,12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBox x:Name="SearchBox"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        PlaceholderText="{Binding SearchPlaceholderText, FallbackValue='Search by track, artist, keyword...'}"
+                        Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                        Icon="Search12"
+                        ClearButtonEnabled="False"
+                        VerticalAlignment="Center"
+                        KeyDown="SearchBox_KeyDown"/>
+
+            <controls:Button Grid.Row="0"
+                       Grid.Column="1"
+                       Variant="Filled" ColorMode="Accent"
+                       Margin="8,0,0,0"
+                       Padding="16,7"
+                       VerticalAlignment="Center"
+                       Command="{s:Action Search}"
+                       Content="Search"/>
+
+            <!-- Filter row -->
+            <StackPanel Grid.Row="1"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        Orientation="Horizontal"
+                        Margin="0,10,0,0">
+
+                        <button:StandardDropdown ToolTip="Select MIDI Provider"
+                                     ItemsSource="{Binding Providers}"
+                                     SelectedItem="{Binding CurrentProvider, Mode=TwoWay}"
+                                     Margin="0,0,8,0">
+                <button:StandardDropdown.SelectedItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Globe24" FontSize="16" Margin="0,0,7,0"/>
+                            <TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </button:StandardDropdown.SelectedItemTemplate>
+                <button:StandardDropdown.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" Margin="4,0"/>
+                    </DataTemplate>
+                </button:StandardDropdown.ItemTemplate>
+            </button:StandardDropdown>
+
+            <button:StandardDropdown ToolTip="Filter by category"
+                                     Visibility="{Binding HasCategories, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                     ItemsSource="{Binding CategoryOptions}"
+                                     SelectedItem="{Binding SelectedCategoryOption, Mode=TwoWay}">
+                <button:StandardDropdown.SelectedItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="TagMultiple24" FontSize="16" Margin="0,0,7,0"/>
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </button:StandardDropdown.SelectedItemTemplate>
+                <button:StandardDropdown.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </button:StandardDropdown.ItemTemplate>
+            </button:StandardDropdown>
+
+            <button:StandardDropdown Margin="8,0,0,0"
+                                     ToolTip="Sort results"
+                                     Visibility="{Binding HasSortOptions, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                     ItemsSource="{Binding SortOptions}"
+                                     SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}">
+                <button:StandardDropdown.SelectedItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowSort24" FontSize="16" Margin="0,0,7,0"/>
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </button:StandardDropdown.SelectedItemTemplate>
+                <button:StandardDropdown.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="{Binding Icon}" FontSize="12" Margin="0,0,7,0"/>
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </button:StandardDropdown.ItemTemplate>
+            </button:StandardDropdown>
+
+            <controls:BusyActionButton Margin="8,0,0,0"
+                       ButtonPadding="10,7"
+                       VerticalAlignment="Center"
+                       ButtonToolTip="Refresh list"
+                       Command="{s:Action Reload}"
+                       IconSymbol="ArrowSync24"
+                       IsBusy="{Binding IsBusy}" />
+            </StackPanel>
+
+            <!-- Account: a toolbar button that opens an account-manager popup. The pool can hold
+                 several MidiShow accounts (password- or cookie-based); downloads rotate across
+                 them and fail over when one is limited. -->
+            <Grid Grid.Row="0" Grid.Column="2" x:Name="AccountAnchor" Margin="8,0,0,0" Visibility="{Binding ShowAccounts, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                <controls:Button Variant="Filled" ColorMode="Accent"
+                                 Icon="PersonCircle24"
+                                 Content="Sign in"
+                                 Padding="13,7"
+                                 VerticalAlignment="Center"
+                                 ToolTip="Add a MidiShow account"
+                                 Command="{s:Action ToggleAccountFlyout}"
+                                 Visibility="{Binding HasAnyAccount, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+
+                <controls:Button Variant="Filled" ColorMode="Default"
+                                 Padding="11,7"
+                                 VerticalAlignment="Center"
+                                 ToolTip="{Binding AccountSummary}"
+                                 Command="{s:Action ToggleAccountFlyout}"
+                                 Visibility="{Binding HasAnyAccount, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="PeopleTeam24" FontSize="16" Foreground="#2EA043" Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding AccountButtonText}" Margin="0,0,6,0"/>
+                        <ui:SymbolIcon Symbol="ChevronDown12" FontSize="11" Opacity="0.7"/>
+                    </StackPanel>
+                </controls:Button>
+
+                <Popup x:Name="AccountPopup"
+                       PlacementTarget="{Binding ElementName=AccountAnchor}"
+                       Placement="Custom"
+                       CustomPopupPlacementCallback="AccountPopup_CustomPlacement"
+                       AllowsTransparency="True"
+                       PopupAnimation="None"
+                       StaysOpen="True"
+                       Opened="AccountPopup_Opened">
+                    <Border x:Name="PopupBorder"
+                            Width="360"
+                            Padding="18"
+                            CornerRadius="10"
+                            Background="{ui:ThemeResource ApplicationBackgroundBrush}"
+                            BorderBrush="{ui:ThemeResource ControlElevationBorderBrush}"
+                            BorderThickness="1"
+                            RenderTransformOrigin="0.5,0"
+                            Opacity="0">
+                        <Border.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleY="0.96"/>
+                                <TranslateTransform Y="-12"/>
+                            </TransformGroup>
+                        </Border.RenderTransform>
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="18" ShadowDepth="3" Opacity="0.35" Color="Black"/>
+                        </Border.Effect>
+
+                        <ScrollViewer MaxHeight="540" VerticalScrollBarVisibility="Auto">
+                            <controls:AccountPanel SiteName="MidiShow"
+                                                   SignUpUrl="https://www.midishow.com/en/user/account/signup"
+                                                   OpeningBrowser="AccountPanel_OpeningBrowser"/>
+                        </ScrollViewer>
+                    </Border>
+                </Popup>
+            </Grid>
+        </Grid>
+
+        <!-- ============ Preview mini-player (separate player; not Listen Mode) ============ -->
+        <Border Grid.Row="1"
+                Margin="0,0,0,10"
+                Padding="12,9"
+                CornerRadius="10"
+                Background="{ui:ThemeResource ControlFillColorSecondaryBrush}"
+                BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
+                BorderThickness="1"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <TranslateTransform/>
+            </Border.RenderTransform>
+            <Border.Style>
+                <!-- Smooth slide + fade + grow on appear, and fade + shrink on close. -->
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding PreviewPlayer.IsPreviewActive}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility" Duration="0:0:0">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}"/>
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.22"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                         From="0" To="90" Duration="0:0:0.22">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         From="-10" To="0" Duration="0:0:0.22">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.16"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                         To="0" Duration="0:0:0.16">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseIn"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         To="-10" Duration="0:0:0.16">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseIn"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.16" Duration="0:0:0">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Collapsed}"/>
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <previewPlayer:MidiPreviewPlayer DataContext="{Binding PreviewPlayer}" />
+        </Border>
+
+        <!-- ============ Results ============ -->
+        <Grid Grid.Row="2">
+            <!-- Virtualized so only the visible cards are realized; each card is a fairly heavy
+                 visual tree, and paging rebuilds the whole list. -->
+            <ListBox x:Name="ResultsList"
+                     ItemsSource="{Binding Results}"
+                     ScrollViewer.CanContentScroll="True"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     VirtualizingPanel.VirtualizationMode="Recycling"
+                     VirtualizingPanel.ScrollUnit="Pixel"
+                     VirtualizingPanel.CacheLength="1"
+                     VirtualizingPanel.CacheLengthUnit="Page"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     BorderThickness="0"
+                     Padding="0,0,16,0"
+                     Background="Transparent"
+                     HorizontalContentAlignment="Stretch">
+                <ListBox.ItemContainerStyle>
+                    <!-- Strip all ListBoxItem chrome (selection/hover highlight, padding); the card
+                         draws its own hover state and the items aren't meant to be "selected". -->
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Focusable" Value="False"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <ContentPresenter/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type onlinemidi:OnlineMidiItem}">
+                        <controls:DiscoveryCard CardClick="Card_Click" PreviewClick="Preview_Click" AddToSongsClick="AddToSongs_Click"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Empty / status state -->
+            <StackPanel VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Visibility="{Binding ShowEmptyState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                <ui:SymbolIcon Symbol="MusicNote224"
+                               FontSize="40"
+                               Opacity="0.4"
+                               HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding StatusMessage, FallbackValue='No MIDI files to show'}"
+                           Margin="0,10,0,0"
+                           Opacity="0.7"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+
+
+
+
+        </Grid>
+
+        <!-- ============ Footer: status + pagination ============ -->
+        <Grid Grid.Row="3"
+              Margin="0,10,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Opacity="0.7"
+                       TextTrimming="CharacterEllipsis"
+                       Text="{Binding StatusMessage}"/>
+
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal">
+                <controls:Button Variant="Ghost" ColorMode="Default"
+                           Padding="10,6"
+                           Margin="0,0,6,0"
+                           ToolTip="Previous page"
+                           IsEnabled="{Binding CanGoToPreviousPage}"
+                           Command="{s:Action PreviousPage}"
+                           Icon="ChevronLeft24" />
+                <ui:TextBox Text="{Binding CurrentPage, Mode=OneWay}"
+                            MinWidth="40"
+                            Padding="12,0"
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            ClearButtonEnabled="False"
+                            KeyDown="PageInput_KeyDown"/>
+                <controls:Button Variant="Ghost" ColorMode="Default"
+                           Padding="10,6"
+                           Margin="6,0,0,0"
+                           ToolTip="Next page"
+                           IsEnabled="{Binding CanGoToNextPage}"
+                           Command="{s:Action NextPage}"
+                           Icon="ChevronRight24" />
+            </StackPanel>
+        </Grid>
+
+
+    </Grid>
+</UserControl>
+
+
+

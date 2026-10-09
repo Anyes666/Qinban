@@ -1,0 +1,317 @@
+<UserControl
+    x:Class="AutoMidiPlayer.WPF.Views.InstrumentView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    mc:Ignorable="d"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:s="https://github.com/canton7/Stylet"
+    xmlns:core="clr-namespace:AutoMidiPlayer.WPF.Core"
+    xmlns:controls="clr-namespace:AutoMidiPlayer.WPF.Controls"
+    xmlns:button="clr-namespace:AutoMidiPlayer.WPF.Controls.SelectorPopupButton.Button"
+    xmlns:helpers="clr-namespace:AutoMidiPlayer.WPF.Helpers"
+    xmlns:viewModels="clr-namespace:AutoMidiPlayer.WPF.ViewModels"
+    xmlns:noSong="clr-namespace:AutoMidiPlayer.WPF.Controls.NoSongPlaceholder"
+    xmlns:properties="clr-namespace:AutoMidiPlayer.Data.Properties;assembly=AutoMidiPlayer.Data"
+    d:DataContext="{d:DesignInstance Type=viewModels:InstrumentViewModel}">
+    <UserControl.Resources>
+        <properties:Settings x:Key="Settings"/>
+        <Style x:Key="PedalBindingsContentContainerStyle"
+               TargetType="Border">
+            <Setter Property="Opacity"
+                    Value="0"/>
+            <Setter Property="MaxHeight"
+                    Value="0"/>
+            <Setter Property="IsHitTestVisible"
+                    Value="False"/>
+            <Setter Property="ClipToBounds"
+                    Value="True"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform Y="-8"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding EnableSustainForInstrument}"
+                             Value="True">
+                    <Setter Property="IsHitTestVisible"
+                            Value="True"/>
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 To="1"
+                                                 Duration="0:0:0.22">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                 To="180"
+                                                 Duration="0:0:0.22">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                 To="0"
+                                                 Duration="0:0:0.22">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                 To="0"
+                                                 Duration="0:0:0.18">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseIn"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="MaxHeight"
+                                                 To="0"
+                                                 Duration="0:0:0.18">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseIn"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                 To="-8"
+                                                 Duration="0:0:0.18">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseIn"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer helpers:ScrollEdgeFadeBehavior.IsEnabled="True">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Column -->
+            <controls:SimpleStackPanel Grid.Column="0"
+                                       Margin="0,0,10,0">
+
+                <!-- Instrument Section -->
+                <controls:Section Title="Game Instrument">
+                    <controls:SimpleStackPanel>
+                        <button:StandardDropdown
+                            ItemsSource="{Binding AvailableInstruments}"
+                            SelectedItem="{Binding SelectedInstrument}"
+                            DisplayMemberPath="Value"
+                            HorizontalAlignment="Left"
+                            Margin="2,0,0,0"
+                            MinWidth="200"/>
+                    </controls:SimpleStackPanel>
+                </controls:Section>
+
+                <controls:Section Title="Keyboard Layout"
+                                  Margin="0,16,0,0">
+                    <controls:SimpleStackPanel>
+                        <button:StandardDropdown
+                            ItemsSource="{Binding AvailableLayouts}"
+                            SelectedItem="{Binding SelectedLayout}"
+                            DisplayMemberPath="Value"
+                            HorizontalAlignment="Left"
+                            Margin="2,0,0,0"
+                            MinWidth="200"/>
+                    </controls:SimpleStackPanel>
+                </controls:Section>
+
+                <!-- Pedal Bindings Section -->
+                <controls:Section Title="Pedal Bindings"
+                                  Description="{Binding PedalSectionDescription}"
+                                  Margin="0,16,0,0">
+                    <controls:Section.HeaderContent>
+                        <controls:SimpleStackPanel Orientation="Horizontal"
+                                                   Spacing="8">
+                            <controls:Button Variant="Ghost"
+                                             ColorMode="Danger"
+                                             IsEnabled="{Binding CanResetPedals}"
+                                             Command="{s:Action ResetPedals}"
+                                             ToolTip="Reset pedal bindings and this instrument's pedal setting to their defaults"
+                                             Icon="ArrowClockwise24"
+                                             IconFontSize="18"/>
+                            <ui:ToggleSwitch IsChecked="{Binding EnableSustainForInstrument, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             IsEnabled="{Binding SupportsSustainPedals}"
+                                             ToolTip="Enable or disable sustain pedals for this instrument"/>
+                        </controls:SimpleStackPanel>
+                    </controls:Section.HeaderContent>
+
+                    <Border Style="{StaticResource PedalBindingsContentContainerStyle}"
+                            Visibility="{Binding SupportsSustainPedals, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                        <Grid Grid.IsSharedSizeScope="True" Margin="2,0,0,0">
+                            <StackPanel>
+                                <controls:KeyEditControl MaxKeysAccepted="1" KeyBinding="{Binding SustainKey, Mode=TwoWay}" Title="Sustain"/>
+                                <controls:KeyEditControl MaxKeysAccepted="1" KeyBinding="{Binding SostenutoKey, Mode=TwoWay}" Title="Sostenuto"/>
+                                <controls:KeyEditControl MaxKeysAccepted="1" KeyBinding="{Binding UnaCordaKey, Mode=TwoWay}" Title="Una Corda"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </controls:Section>
+
+                <!-- Auto Chord Section -->
+                <controls:Section Title="Auto Chord"
+                                  Margin="0,16,0,0">
+                    <controls:SimpleStackPanel>
+                        <controls:SimpleStackPanel Orientation="Horizontal"
+                                                   Spacing="20"
+                                                   IsEnabled="{Binding CanUseAutoChord}">
+                            <ui:ToggleSwitch Content="Detect and play chords"
+                                             IsChecked="{Binding AutoChord, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             ToolTip="Match simultaneous MIDI notes to the game instrument's chord keys."/>
+                            <controls:Numberbox ToolTip="Chord onset tolerance (ms)"
+                                                 IsEnabled="{Binding AutoChord}"
+                                                 Value="{Binding ChordDetectionMilliseconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Minimum="0"
+                                                 Maximum="1000"
+                                                 MaxDecimalPlaces="0"/>
+                        </controls:SimpleStackPanel>
+                        <TextBlock Text="Matches the supported chords. The tolerance allows slightly staggered MIDI chord onsets."
+                                   TextWrapping="Wrap"
+                                   Opacity="0.6"
+                                   FontSize="12"
+                                   Margin="0,-4,0,0"
+                                   Visibility="{Binding SupportsAutoChord, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"/>
+                        <TextBlock Text="The selected instrument does not support chords."
+                                   TextWrapping="Wrap"
+                                   Opacity="0.6"
+                                   FontSize="12"
+                                   Margin="0,-4,0,0"
+                                   Visibility="{Binding SupportsAutoChord, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"/>
+                    </controls:SimpleStackPanel>
+                </controls:Section>
+            </controls:SimpleStackPanel>
+
+            <!-- Right Column -->
+            <controls:SimpleStackPanel Grid.Column="1"
+                                       Margin="10,0,0,0">
+
+                <controls:Section Title="Listening">
+                    <controls:SimpleStackPanel>
+                        <ui:ToggleSwitch
+                            Content="Listen Mode"
+                            ToolTip="Play MIDI to speakers"
+                            IsChecked="{Binding UseSpeakers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <ui:ToggleSwitch
+                            Content="Play unplayable notes in listen mode"
+                            ToolTip="Play unplayable notes in listen mode when transposition is set to ignore"
+                            IsChecked="{Binding PlayUnplayableOnIgnore, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Margin="0,0,0,0"/>
+                    </controls:SimpleStackPanel>
+                </controls:Section>
+
+                <!-- Notes Section -->
+                <controls:Section Title="Notes"
+                                  Margin="0,16,0,0">
+                    <controls:SimpleStackPanel>
+                        <ContentControl Visibility="{Binding HasSongOpen, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}"
+                                        Margin="0,0,0,8"
+                                        HorizontalAlignment="Left">
+                            <noSong:NoSongPlaceholder DataContext="{Binding Placeholder}"/>
+                        </ContentControl>
+
+                        <controls:SimpleStackPanel Orientation="Horizontal"
+                                                   Spacing="20"
+                                                   IsEnabled="{Binding HasSongOpen}">
+                            <ui:ToggleSwitch
+                                Content="Merge nearby notes"
+                                IsChecked="{Binding MergeNotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            <controls:Numberbox
+                                ToolTip="Tolerance (ms)"
+                                IsEnabled="{Binding MergeNotes}"
+                                Value="{Binding MergeMilliseconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </controls:SimpleStackPanel>
+
+                        <ui:ToggleSwitch
+                            Content="Hold notes"
+                            IsChecked="{Binding HoldNotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            IsEnabled="{Binding HasSongOpen}"
+                            ToolTip="Uses MIDI file note-on/note-off for key down/up, ignoring Enable Key-up and key press delay settings."
+                            Margin="0,0,0,0"/>
+                    </controls:SimpleStackPanel>
+                </controls:Section>
+
+                <!-- MIDI Input Section -->
+                <controls:Section Title="MIDI Input"
+                                  Margin="0,16,0,0">
+                    <GroupBox Header="Physical MIDI Instrument">
+                        <controls:SimpleStackPanel>
+                            <controls:SimpleStackPanel Orientation="Horizontal">
+                                <button:StandardDropdown
+                                    ItemsSource="{Binding MidiInputs}"
+                                    SelectedItem="{Binding SelectedMidiInput}"
+                                    DisplayMemberPath="DeviceName"
+                                    HorizontalAlignment="Left"
+                                    Margin="2,0,0,0"
+                                    MinWidth="200"/>
+                                <controls:Button Variant="Ghost"
+                                                 Icon="ArrowClockwise24"
+                                                 IconFontSize="18"
+                                                 Command="{s:Action RefreshDevices}"
+                                                 ToolTip="Refresh MIDI devices"/>
+                            </controls:SimpleStackPanel>
+                            <TextBlock Text="Connect a physical MIDI keyboard or controller to use it as input."
+                                       TextWrapping="Wrap"
+                                       Opacity="0.6"
+                                       FontSize="12"
+                                       Margin="0,-4,0,0"/>
+                        </controls:SimpleStackPanel>
+                    </GroupBox>
+                </controls:Section>
+
+                <!-- Scheduled Playback Section -->
+                <controls:Section Title="Scheduled Playback"
+                                  Margin="0,16,0,0">
+                    <controls:SimpleStackPanel Orientation="Horizontal"
+                                               Spacing="8">
+                        <controls:Numberbox ToolTip="hour"
+                                             Value="{Binding ScheduledHour, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Minimum="0"
+                                             Maximum="23"
+                                             MaxDecimalPlaces="0"
+                                             FixedWidth="True"
+                                             IsEnabled="{Binding CanChangeTime}"/>
+                        <TextBlock Text=":"
+                                   VerticalAlignment="Center"/>
+                        <controls:Numberbox ToolTip="minute"
+                                             Value="{Binding ScheduledMinute, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Minimum="0"
+                                             Maximum="59"
+                                             MaxDecimalPlaces="0"
+                                             FixedWidth="True"
+                                             IsEnabled="{Binding CanChangeTime}"/>
+                        <controls:Button Variant="Outlined"
+                                         Command="{s:Action SetTimeToNow}"
+                                         IsEnabled="{Binding CanChangeTime}"
+                                         Content="Now"/>
+                        <controls:Button Variant="Outlined"
+                                         Command="{s:Action StartStopTimer}"
+                                         Content="{Binding TimerText}"/>
+                        <TextBlock Text="{Binding ScheduledTimeText}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </controls:SimpleStackPanel>
+                </controls:Section>
+            </controls:SimpleStackPanel>
+
+
+        </Grid>
+    </ScrollViewer>
+</UserControl>

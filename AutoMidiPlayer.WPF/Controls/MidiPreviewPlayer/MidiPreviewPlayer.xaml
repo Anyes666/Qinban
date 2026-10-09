@@ -1,0 +1,135 @@
+<UserControl x:Class="AutoMidiPlayer.WPF.Controls.MidiPreviewPlayer.MidiPreviewPlayer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:s="https://github.com/canton7/Stylet"
+             xmlns:controls="clr-namespace:AutoMidiPlayer.WPF.Controls"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:seekbar="clr-namespace:AutoMidiPlayer.WPF.Controls.PlayerControlPanel"
+             xmlns:local="clr-namespace:AutoMidiPlayer.WPF.Controls.MidiPreviewPlayer"
+             xmlns:converters="clr-namespace:AutoMidiPlayer.WPF.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="60" d:DesignWidth="400"
+             d:DataContext="{d:DesignInstance local:MidiPreviewPlayerViewModel}"
+             s:View.ActionTarget="{Binding}">
+    <UserControl.Resources>
+        <converters:UrlToCachedImageConverter x:Key="UrlToCachedImageConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Play/Pause -->
+        <controls:Button Grid.Column="0"
+                   Variant="Ghost" ColorMode="Default"
+                   Padding="6"
+                   Margin="2,0,2,0"
+                   VerticalAlignment="Center"
+                   ToolTip="Play/Pause"
+                   Command="{s:Action TogglePlayPause}">
+            <ui:SymbolIcon FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                <ui:SymbolIcon.Style>
+                    <Style TargetType="ui:SymbolIcon">
+                        <Setter Property="Symbol" Value="Play24"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsPreviewPlaying}" Value="True">
+                                <Setter Property="Symbol" Value="Pause24"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ui:SymbolIcon.Style>
+            </ui:SymbolIcon>
+        </controls:Button>
+
+        <!-- Stop -->
+        <controls:Button Grid.Column="1"
+                   Variant="Ghost" ColorMode="Default"
+                   Padding="6"
+                   Margin="2,0,0,0"
+                   VerticalAlignment="Center"
+                   ToolTip="Stop preview"
+                   Command="{s:Action Stop}">
+            <ui:SymbolIcon Symbol="Stop24" FontSize="18"
+                           Foreground="#C42B1C"/>
+        </controls:Button>
+
+        <!-- Title + seekbar + Time -->
+        <Grid Grid.Column="2" VerticalAlignment="Center" Margin="24,0,24,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Title & Author -->
+            <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,0,0,4">
+                <TextBlock Text="{Binding PreviewTitle, Mode=OneWay}" 
+                           FontWeight="SemiBold" 
+                           TextTrimming="CharacterEllipsis"/>
+                
+                <StackPanel Orientation="Horizontal" 
+                            Margin="0,2,0,0" 
+                            Visibility="{Binding HasPreviewUploader, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                    <Border Width="16" Height="16" 
+                            CornerRadius="8" 
+                            Margin="0,0,6,0"
+                            Visibility="{Binding HasPreviewAvatar, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                        <Border.Background>
+                            <ImageBrush ImageSource="{Binding PreviewAvatarUrl, Converter={StaticResource UrlToCachedImageConverter}}" Stretch="UniformToFill"/>
+                        </Border.Background>
+                    </Border>
+                    <TextBlock Text="{Binding PreviewUploader, Mode=OneWay}"
+                               FontSize="11"
+                               Opacity="0.7"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Current Time -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Opacity="0.7"
+                       Text="{Binding PreviewPositionText, Mode=OneWay}"/>
+                       
+            <!-- Seekbar -->
+            <seekbar:Seekbar x:Name="PreviewSeek"
+                             Grid.Row="1" Grid.Column="1"
+                             Margin="8,0"
+                             SliderStyle="{StaticResource ProgressSlider}"
+                             Minimum="0"
+                             Maximum="{Binding PreviewDurationSeconds}"
+                             Value="{Binding PreviewPositionSeconds, Mode=TwoWay}"
+                             PreviewValue="{Binding DisplayPreviewPositionSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsPreviewActive="{Binding IsPreviewScrubbing, Mode=TwoWay}"
+                             IsSelectionRangeEnabled="True"
+                             SelectionStart="0"
+                             SelectionEnd="{Binding PreviewPositionSeconds, Mode=OneWay}"/>
+                             
+            <!-- Duration Time -->
+            <TextBlock Grid.Row="1" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Opacity="0.7"
+                       Text="{Binding PreviewDurationText, Mode=OneWay}"/>
+        </Grid>
+
+        <!-- Preview Text -->
+        <TextBlock Grid.Column="3" 
+                   Text="Preview" 
+                   FontSize="11"
+                   Opacity="0.7"
+                   VerticalAlignment="Center" 
+                   Margin="0,0,12,0"/>
+    </Grid>
+</UserControl>

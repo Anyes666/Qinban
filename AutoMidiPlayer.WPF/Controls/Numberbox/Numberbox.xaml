@@ -1,0 +1,232 @@
+<UserControl x:Class="AutoMidiPlayer.WPF.Controls.Numberbox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             x:Name="Root"
+             Focusable="False"
+             Validation.ErrorTemplate="{x:Null}"
+             FocusVisualStyle="{x:Null}">
+    <Grid ToolTip="{Binding ToolTip, ElementName=Root}"
+          PreviewMouseWheel="Root_PreviewMouseWheel">
+        <!-- Glow border (same pattern as StandardDropdown) -->
+        <Border x:Name="GlowBorder"
+                BorderThickness="1"
+                CornerRadius="6"
+                BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
+                Opacity="0"
+                IsHitTestVisible="False"
+                Margin="-2">
+            <Border.Effect>
+                <DropShadowEffect Color="{DynamicResource SystemAccentColor}"
+                                  BlurRadius="18"
+                                  ShadowDepth="0"
+                                  Opacity="1"/>
+            </Border.Effect>
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsGlowActive, ElementName=Root}"
+                                     Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         To="1"
+                                                         Duration="0:0:0.05"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         To="0"
+                                                         Duration="0:0:0.4"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+        </Border>
+
+        <!-- Main control border -->
+        <Border x:Name="MainBorder"
+                BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="0">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background"
+                            Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsInvalid, ElementName=Root}"
+                                     Value="True">
+                            <Setter Property="BorderBrush"
+                                    Value="#C42B1C"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsEnabled, ElementName=Root}"
+                                     Value="False">
+                            <Setter Property="Background"
+                                    Value="{DynamicResource ControlFillColorDisabledBrush}"/>
+                            <Setter Property="BorderBrush"
+                                    Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <Grid x:Name="ContentGrid">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsEnabled, ElementName=Root}"
+                                         Value="False">
+                                <Setter Property="Opacity" Value="0.36"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Editable text input — fully bare template, no chrome -->
+                <TextBox x:Name="ValueTextBox"
+                         Grid.Column="0"
+                         Text="{Binding TextValue, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=False, ValidatesOnExceptions=False}"
+                         VerticalAlignment="Center"
+                         VerticalContentAlignment="Center"
+                         HorizontalContentAlignment="Left"
+                         MinWidth="12"
+                         GotFocus="ValueTextBox_GotFocus"
+                         LostFocus="ValueTextBox_LostFocus"
+                         PreviewKeyDown="ValueTextBox_PreviewKeyDown">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <Setter Property="CaretBrush" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="Padding" Value="8,5,4,5"/>
+                            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <ScrollViewer x:Name="PART_ContentHost"
+                                                      Focusable="False"
+                                                      HorizontalScrollBarVisibility="Hidden"
+                                                      VerticalScrollBarVisibility="Disabled"
+                                                      Padding="{TemplateBinding Padding}"
+                                                      Background="{TemplateBinding Background}"/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsInvalid, ElementName=Root}"
+                                             Value="True">
+                                    <Setter Property="Foreground"
+                                            Value="#C42B1C"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsEnabled, ElementName=Root}"
+                                             Value="False">
+                                    <Setter Property="Foreground"
+                                            Value="{DynamicResource TextFillColorDisabledBrush}"/>
+                                    <Setter Property="IsReadOnly"
+                                            Value="True"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+
+                <!-- Chevron buttons column -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Vertical"
+                            VerticalAlignment="Center"
+                            Margin="0,1,2,1">
+                    <!-- Up chevron -->
+                    <RepeatButton x:Name="UpButton"
+                                  Click="UpButton_Click"
+                                  Focusable="False"
+                                  Width="20"
+                                  Height="14"
+                                  Padding="0"
+                                  BorderThickness="0"
+                                  Background="Transparent"
+                                  Cursor="Hand"
+                                  Delay="400"
+                                  Interval="60">
+                        <RepeatButton.Template>
+                            <ControlTemplate TargetType="RepeatButton">
+                                <Border Background="{TemplateBinding Background}"
+                                        CornerRadius="3,3,0,0">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver"
+                                             Value="True">
+                                        <Setter Property="Background"
+                                                Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed"
+                                             Value="True">
+                                        <Setter Property="Background"
+                                                Value="{DynamicResource ControlFillColorTertiaryBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </RepeatButton.Template>
+                        <ui:SymbolIcon Symbol="ChevronUp12"
+                                       FontSize="8"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </RepeatButton>
+
+                    <!-- Down chevron -->
+                    <RepeatButton x:Name="DownButton"
+                                  Click="DownButton_Click"
+                                  Focusable="False"
+                                  Width="20"
+                                  Height="14"
+                                  Padding="0"
+                                  BorderThickness="0"
+                                  Background="Transparent"
+                                  Cursor="Hand"
+                                  Delay="400"
+                                  Interval="60">
+                        <RepeatButton.Template>
+                            <ControlTemplate TargetType="RepeatButton">
+                                <Border Background="{TemplateBinding Background}"
+                                        CornerRadius="0,0,3,3">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver"
+                                             Value="True">
+                                        <Setter Property="Background"
+                                                Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed"
+                                             Value="True">
+                                        <Setter Property="Background"
+                                                Value="{DynamicResource ControlFillColorTertiaryBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </RepeatButton.Template>
+                        <ui:SymbolIcon Symbol="ChevronDown12"
+                                       FontSize="8"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </RepeatButton>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

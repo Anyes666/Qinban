@@ -1,0 +1,27 @@
+<UserControl x:Class="AutoMidiPlayer.WPF.Controls.SelectorPopupButton.Button.PlayerControlDropdown"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:AutoMidiPlayer.WPF.Controls"
+             xmlns:menu="clr-namespace:AutoMidiPlayer.WPF.Controls.SelectorPopupButton.Menu"
+             x:Name="Root"
+             Focusable="False">
+    <Grid ToolTip="{Binding ToolTip, ElementName=Root}">
+        <controls:Button Variant="GhostDimmed"
+                         x:Name="SelectorButton"
+                         Margin="0,1,0,0"
+                         Padding="7,3"
+                         HorizontalAlignment="Center"
+                         IsActive="{Binding IsActive, ElementName=Root}"
+                         Click="SelectorButton_Click">
+            <ContentPresenter Content="{Binding ButtonContent, ElementName=Root}"/>
+        </controls:Button>
+
+        <menu:SelectorMenuPopup x:Name="MenuPopup"
+                                PlacementTarget="{Binding ElementName=SelectorButton}"
+                                ItemsSource="{Binding ItemsSource, ElementName=Root}"
+                                SelectedItem="{Binding SelectedItem, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                ItemTemplate="{Binding ItemTemplate, ElementName=Root}"
+                                MaxPopupWidth="{Binding PopupMaxWidth, ElementName=Root}"
+                                MaxPopupHeight="{Binding PopupMaxHeight, ElementName=Root}"/>
+    </Grid>
+</UserControl>

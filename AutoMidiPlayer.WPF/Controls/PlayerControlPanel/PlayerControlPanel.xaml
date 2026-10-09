@@ -1,0 +1,27 @@
+<UserControl x:Class="AutoMidiPlayer.WPF.Controls.PlayerControlPanel.PlayerControlPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:songInfo="clr-namespace:AutoMidiPlayer.WPF.Controls.PlayerControlPanel"
+             xmlns:playback="clr-namespace:AutoMidiPlayer.WPF.Controls.PlayerControlPanel"
+             xmlns:settings="clr-namespace:AutoMidiPlayer.WPF.Controls.PlayerControlPanel">
+    <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
+            IsEnabled="{Binding IsControlPanelEnabled}"
+            Padding="24,16">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"
+                                  MinWidth="180"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"
+                                  MinWidth="180"/>
+            </Grid.ColumnDefinitions>
+
+            <songInfo:SongInfoControl Grid.Column="0"/>
+            <playback:MainPlaybackControl Grid.Column="1"/>
+            <settings:AudioSettingsControl Grid.Column="2"/>
+        </Grid>
+    </Border>
+</UserControl>

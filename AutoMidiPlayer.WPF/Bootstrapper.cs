@@ -1,0 +1,648 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
+using Windows.Media;
+using Windows.Media.Playback;
+using Windows.Storage.Streams;
+using AutoMidiPlayer.Data;
+using AutoMidiPlayer.Data.Properties;
+using AutoMidiPlayer.WPF.Helpers;
+using AutoMidiPlayer.WPF.MessageBox;
+using AutoMidiPlayer.WPF.ViewModels;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Sentry;
+using Sentry.Profiling;
+using Stylet;
+using StyletIoC;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using Wpf.Ui.Appearance;
+using System.Threading;
+using System.Windows.Media;
+
+namespace AutoMidiPlayer.WPF;
+
+public class Bootstrapper : Bootstrapper<MainWindowViewModel>
+{
+
+    private static bool _databaseInitialized;
+    private System.Threading.Mutex? _singleInstanceMutex;
+
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsIconic(IntPtr hWnd);
+
+    private const int SW_RESTORE = 9;
+
+    private static readonly (string ColumnName, string SqlType)[] SongColumnMigrations =
+    [
+        ("ImagePath", "TEXT NULL"),
+        ("FileHash", "TEXT NULL"),
+        ("MergeNotes", "INTEGER NULL"),
+        ("MergeMilliseconds", "INTEGER NULL"),
+        ("HoldNotes", "INTEGER NULL"),
+        ("AutoChord", "INTEGER NULL"),
+        ("ChordDetectionMilliseconds", "INTEGER NULL"),
+        ("Speed", "REAL NULL"),
+        ("Bpm", "REAL NULL"),
+        ("BaseKey", "INTEGER NULL"),
+        ("CachedDurationMs", "INTEGER NULL"),
+        ("CachedNativeBpm", "REAL NULL")
+    ];
+
+    public Bootstrapper()
+    {
+        System.Runtime.Loader.AssemblyLoadContext.Default.Resolving += (context, assemblyName) =>
+        {
+            if (assemblyName.Name != null)
+            {
+                var path = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, assemblyName.Name + ".dll");
+                if (System.IO.File.Exists(path))
+                {
+                    return context.LoadFromAssemblyPath(path);
+                }
+            }
+            return null;
+        };
+
+        SQLitePCL.Batteries.Init();
+        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+        // Suppress benign Storyboard animation warnings from WPF-UI (idk why this happens XD)
+        System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
+        System.Diagnostics.PresentationTraceSources.ResourceDictionarySource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
+        System.Diagnostics.PresentationTraceSources.AnimationSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
+
+        // ensure version retrieval helper is available by referencing Reflection
+        _ = GetAppVersion();
+
+        // Ensure queue loop mode is always a valid enum value before ViewModels read settings.
+        EnsureQueueLoopModeSetting();
+
+        // Clear log on startup
+        Logger.ClearLog();
+
+        // log application start along with the product name and current version
+        string productName = GetProductName();
+        string appVersionDisplay = GetAppVersion();
+        Logger.LogStartup(productName, appVersionDisplay);
+        // Logger.LogApp($"Logs directory: {Logger.GetLogsDirectoryPath()}");
+        AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+        {
+            Logger.LogApp($"{GetProductName()} v{GetAppVersion()} Stopping");
+            try
+            {
+                // Best-effort: stop the system theme watcher if running.
+                AutoMidiPlayer.WPF.Services.SystemThemeService.Stop();
+            }
+            catch { }
+
+            // Flush Sentry events and shut down cleanly
+            SentrySdk.Close();
+        };
+
+        // Handle unhandled exceptions
+        Application.Current.DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+
+    }
+
+    protected override void OnLaunch()
+    {
+        base.OnLaunch();
+
+        // Initialize Sentry early, after DI container is fully built and app is launching
+        try
+        {
+            var sentryService = Container.Get<AutoMidiPlayer.WPF.Services.ISentryService>();
+            sentryService.Initialize();
+
+            // Report app start for Daily Active User tracking
+            if (SentrySdk.IsEnabled)
+            {
+                SentrySdk.CaptureMessage("User started app", SentryLevel.Info);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogException(ex);
+        }
+    }
+
+    protected override void OnStart()
+    {
+        _singleInstanceMutex = new Mutex(true, "AutoMidiPlayer_SingleInstance", out bool createdNew);
+        if (!createdNew)
+        {
+            BringExistingInstanceToFront();
+            Environment.Exit(0);
+            return;
+        }
+
+        base.OnStart();
+    }
+
+    private static void BringExistingInstanceToFront()
+    {
+        var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+        var processes = System.Diagnostics.Process.GetProcessesByName(currentProcess.ProcessName);
+
+        foreach (var process in processes)
+        {
+            if (process.Id != currentProcess.Id)
+            {
+                var hWnd = process.MainWindowHandle;
+                if (hWnd != IntPtr.Zero)
+                {
+                    if (IsIconic(hWnd))
+                    {
+                        ShowWindow(hWnd, SW_RESTORE);
+                    }
+                    SetForegroundWindow(hWnd);
+                }
+                break;
+            }
+        }
+    }
+
+
+    private static void EnsureQueueLoopModeSetting()
+    {
+        if (Enum.IsDefined(typeof(QueueViewModel.LoopMode), Settings.Default.QueueLoopMode))
+            return;
+
+        Settings.Default.QueueLoopMode = (int)QueueViewModel.LoopMode.Off;
+        Settings.Default.Save();
+    }
+
+    private static string GetAppVersion()
+    {
+        // assembly version should be kept in sync with project version
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        if (version is null)
+            return "unknown";
+
+        if (version.Revision == 0 && version.Build >= 0)
+            return $"{version.Major}.{version.Minor}.{version.Build}";
+
+        if (version.Build < 0)
+            return $"{version.Major}.{version.Minor}";
+
+        return version.ToString();
+    }
+
+    private static string GetProductName()
+    {
+        // read product attribute from assembly (populated from csproj <Product>)
+        var attr = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyProductAttribute>();
+        return attr?.Product ?? "Unknown Product";
+    }
+
+    private static void EnsureDatabaseInitialized(PlayerContext db)
+    {
+        if (_databaseInitialized)
+            return;
+
+        using (var mutex = new System.Threading.Mutex(false, "AutoMidiPlayer_DB_Init"))
+        {
+            var hasHandle = false;
+            try
+            {
+                try
+                {
+                    hasHandle = mutex.WaitOne(TimeSpan.FromSeconds(30), false);
+                }
+                catch (AbandonedMutexException)
+                {
+                    hasHandle = true;
+                }
+
+                if (_databaseInitialized)
+                    return;
+
+                InitializeDatabaseWithRetry(db);
+
+                _databaseInitialized = true;
+            }
+            finally
+            {
+                if (hasHandle)
+                {
+                    try
+                    {
+                        mutex.ReleaseMutex();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogException(ex);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void PrepareDatabaseFile()
+    {
+        try
+        {
+            AppPaths.EnsureDatabaseDirectoryExists();
+
+            var dbPath = AppPaths.DatabasePath;
+            if (File.Exists(dbPath))
+            {
+                var attr = File.GetAttributes(dbPath);
+                if ((attr & FileAttributes.ReadOnly) != 0)
+                {
+                    File.SetAttributes(dbPath, attr & ~FileAttributes.ReadOnly);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogException(ex);
+        }
+    }
+
+    private static void InitializeDatabaseWithRetry(PlayerContext db)
+    {
+        const int maxRetries = 3;
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                PrepareDatabaseFile();
+                ApplyDatabaseCreationAndMigrations(db);
+                return;
+            }
+            catch (SqliteException ex) when (attempt < maxRetries)
+            {
+                Logger.Log($"Database initialization attempt {attempt} failed (ErrorCode: {ex.SqliteErrorCode}): {ex.Message}. Retrying...");
+                Thread.Sleep(500 * attempt);
+            }
+            catch (SqliteException ex)
+            {
+                Logger.LogException(ex);
+                SentrySdk.CaptureException(ex);
+
+                // If all retries failed due to an unopenable or corrupt database, attempt recovery by backing up and recreating
+                if (TryRecoverDatabaseFile())
+                {
+                    Logger.Log("Corrupt or unopenable database file was backed up. Attempting to recreate database...");
+                    PrepareDatabaseFile();
+                    ApplyDatabaseCreationAndMigrations(db);
+                    return;
+                }
+
+                throw;
+            }
+        }
+    }
+
+    private static void ApplyDatabaseCreationAndMigrations(PlayerContext db)
+    {
+        db.Database.EnsureCreated();
+
+        var existingSongColumns = GetSongTableColumns(db);
+        if (existingSongColumns.Count > 0)
+        {
+            RenameSongColumn(db, existingSongColumns, "Author", "Artist");
+            RenameSongColumn(db, existingSongColumns, "DefaultKey", "BaseKey");
+            RenameSongColumn(db, existingSongColumns, "DetectChordPads", "AutoChord");
+
+            foreach (var (columnName, sqlType) in SongColumnMigrations)
+            {
+                if (!existingSongColumns.Contains(columnName))
+                    AddSongColumnIfMissing(db, columnName, sqlType);
+            }
+        }
+    }
+
+    private static bool TryRecoverDatabaseFile()
+    {
+        try
+        {
+            var dbPath = AppPaths.DatabasePath;
+            if (!File.Exists(dbPath))
+                return false;
+
+            SqliteConnection.ClearAllPools();
+
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+            var backupPath = $"{dbPath}.corrupted.{timestamp}";
+
+            File.Move(dbPath, backupPath, true);
+
+            var walPath = $"{dbPath}-wal";
+            if (File.Exists(walPath))
+            {
+                try { File.Move(walPath, $"{backupPath}-wal", true); } catch { }
+            }
+
+            var shmPath = $"{dbPath}-shm";
+            if (File.Exists(shmPath))
+            {
+                try { File.Move(shmPath, $"{backupPath}-shm", true); } catch { }
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogException(ex);
+            return false;
+        }
+    }
+
+    private static HashSet<string> GetSongTableColumns(PlayerContext db)
+    {
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var connection = db.Database.GetDbConnection();
+        var shouldCloseConnection = connection.State == System.Data.ConnectionState.Closed;
+        if (shouldCloseConnection)
+            connection.Open();
+
+        try
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA table_info(Songs);";
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                var name = reader.GetString(1);
+                if (!string.IsNullOrWhiteSpace(name))
+                    columns.Add(name);
+            }
+        }
+        finally
+        {
+            if (shouldCloseConnection)
+                connection.Close();
+        }
+
+        return columns;
+    }
+
+    // #pragma warning disable EF1003
+
+    private static void RenameSongColumn(PlayerContext db, HashSet<string> existingSongColumns, string oldColumnName, string newColumnName)
+    {
+        if (!existingSongColumns.Contains(oldColumnName) || existingSongColumns.Contains(newColumnName))
+            return;
+
+        if (!IsSafeSqlIdentifier(oldColumnName) || !IsSafeSqlIdentifier(newColumnName))
+            throw new ArgumentException("Invalid song column name.");
+
+        try
+        {
+#pragma warning disable EF1003 // Column names cannot be parameterized; both identifiers are validated above.
+            db.Database.ExecuteSqlRaw(@"
+                ALTER TABLE Songs RENAME COLUMN " + oldColumnName + @" TO " + newColumnName + @";
+            ");
+#pragma warning restore EF1003
+
+            existingSongColumns.Remove(oldColumnName);
+            existingSongColumns.Add(newColumnName);
+        }
+        catch
+        {
+            ExecuteSqlIgnoringErrors(db, @"
+                ALTER TABLE Songs ADD COLUMN " + newColumnName + @" TEXT NULL;
+            ");
+
+            ExecuteSqlIgnoringErrors(db, @"
+                UPDATE Songs
+                SET " + newColumnName + @" = " + oldColumnName + @"
+                WHERE " + newColumnName + @" IS NULL;
+            ");
+
+            existingSongColumns.Remove(oldColumnName);
+            existingSongColumns.Add(newColumnName);
+        }
+    }
+
+    private static bool IsSafeSqlIdentifier(string value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        (char.IsLetter(value[0]) || value[0] == '_') &&
+        value.All(character => char.IsLetterOrDigit(character) || character == '_');
+
+    private static void AddSongColumnIfMissing(PlayerContext db, string columnName, string sqlType)
+    {
+        ExecuteSqlIgnoringErrors(db, $@"
+            ALTER TABLE Songs ADD COLUMN {columnName} {sqlType};
+        ");
+    }
+
+    private static void ExecuteSqlIgnoringErrors(PlayerContext db, string sql)
+    {
+        try
+        {
+            db.Database.ExecuteSqlRaw(sql);
+        }
+        catch
+        {
+            // Best-effort migration: schema already updated or not applicable.
+        }
+    }
+
+#pragma warning restore EF1003
+
+    // Re-entrancy guard: prevents one failure (e.g. a render-thread OutOfMemoryException
+    // raised on every window-position update) from cascading into a storm of reports and
+    // crash dialogs, where showing each dialog allocates another window and re-throws.
+    private static int _handlingDispatcherException;
+
+    // HRESULT DWM_E_COMPOSITIONDISABLED: thrown by WPF's WindowChrome when it tries to
+    // extend the glass/Mica frame (DwmExtendFrameIntoClientArea) while desktop composition
+    // is disabled (e.g. RDP/remote sessions). It is cosmetic and safe to ignore.
+    private const int DwmCompositionDisabledHResult = unchecked((int)0x80263001);
+
+    private static bool IsBenignDwmCompositionException(Exception? ex)
+        => ex is COMException com && com.HResult == DwmCompositionDisabledHResult;
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        // If we're already handling an exception, swallow this one to break the cascade.
+        if (Interlocked.CompareExchange(ref _handlingDispatcherException, 1, 0) != 0)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        try
+        {
+            if (IsBenignDwmCompositionException(e.Exception))
+            {
+                // Desktop composition is disabled; the frame just can't be extended right now.
+                // Recover silently instead of crashing or filing a noisy error report.
+                Logger.Log("Ignoring benign DWM composition-disabled exception (0x80263001).");
+                e.Handled = true;
+                return;
+            }
+
+            Logger.Log("=== DISPATCHER UNHANDLED EXCEPTION ===");
+            Logger.LogException(e.Exception);
+            SentrySdk.CaptureException(e.Exception);
+
+            // Flush to ensure the crash event reaches Sentry before the app may terminate
+            SentrySdk.FlushAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+
+            // Under memory exhaustion, do NOT open the themed WPF crash dialog: building a new
+            // window needs render memory and re-throws, amplifying a single OOM into a storm.
+            // Fail fast instead — the process is unrecoverable.
+            if (IsMemoryExhaustion(e.Exception))
+            {
+                e.Handled = true;
+                Application.Current?.Shutdown();
+                return;
+            }
+
+            e.Handled = true;
+            try
+            {
+                CrashMessageBox.Show(e.Exception, Logger.GetPrimaryLogPath());
+            }
+            catch
+            {
+                // Fallback if the themed dialog itself fails
+                MessageBoxHelper.ShowError(
+                    $"An error occurred. Logs saved in:\n{Logger.GetLogsDirectoryPath()}\n\nError: {e.Exception.Message}",
+                    "AutoMidiPlayer Error");
+            }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _handlingDispatcherException, 0);
+        }
+    }
+
+    private static bool IsMemoryExhaustion(Exception? exception)
+    {
+        for (var current = exception; current != null; current = current.InnerException)
+        {
+            if (current is OutOfMemoryException)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception benign && IsBenignDwmCompositionException(benign))
+        {
+            Logger.Log("Ignoring benign DWM composition-disabled exception (0x80263001).");
+            return;
+        }
+
+        Logger.Log("=== UNHANDLED EXCEPTION ===");
+        if (e.ExceptionObject is Exception ex)
+        {
+            Logger.LogException(ex);
+            SentrySdk.CaptureException(ex);
+        }
+        else
+            Logger.Log($"Non-exception object: {e.ExceptionObject}");
+
+        // Terminal crash — flush synchronously before the process dies
+        SentrySdk.FlushAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        if (IsBenignDwmCompositionException(e.Exception) ||
+            e.Exception?.InnerExceptions.Any(IsBenignDwmCompositionException) == true)
+        {
+            Logger.Log("Ignoring benign DWM composition-disabled exception (0x80263001).");
+            e.SetObserved();
+            return;
+        }
+
+        Logger.Log("=== UNOBSERVED TASK EXCEPTION ===");
+        var exception = e.Exception;
+        if (exception is null)
+        {
+            Logger.Log("Unobserved task exception did not include an exception instance.");
+            return;
+        }
+
+        Logger.LogException(exception);
+        SentrySdk.CaptureException(exception);
+    }
+
+    protected override void ConfigureIoC(IStyletIoCBuilder builder)
+    {
+        // Bind Sentry service first
+        builder.Bind<AutoMidiPlayer.WPF.Services.ISentryService>().To<AutoMidiPlayer.WPF.Services.SentryService>().InSingletonScope();
+        // Use centralized app data path
+        AppPaths.EnsureDirectoryExists();
+
+        // Use cached view manager to avoid rebuilding heavy views on navigation
+        builder.Bind<IViewManager>().To<CachedViewManager>().InSingletonScope();
+
+        builder.Bind<PlayerContext>().ToFactory(_ =>
+        {
+            AppPaths.EnsureDatabaseDirectoryExists();
+
+            var connectionString = new SqliteConnectionStringBuilder
+            {
+                DataSource = AppPaths.DatabasePath,
+                Mode = SqliteOpenMode.ReadWriteCreate,
+                DefaultTimeout = 30
+            }.ToString();
+
+            var options = new DbContextOptionsBuilder<PlayerContext>()
+                .UseSqlite(connectionString)
+                .Options;
+
+            var db = new PlayerContext(options);
+            EnsureDatabaseInitialized(db);
+
+            return db;
+        });
+
+        builder.Bind<Windows.Media.Playback.MediaPlayer>().ToFactory(_ =>
+        {
+            var player = new Windows.Media.Playback.MediaPlayer();
+            var controls = player.SystemMediaTransportControls;
+
+            controls.IsEnabled = true;
+            controls.DisplayUpdater.Type = MediaPlaybackType.Music;
+
+            Task.Run(async () =>
+            {
+                await Task.Yield();
+                controls.DisplayUpdater.Thumbnail =
+                    RandomAccessStreamReference.CreateFromUri(new Uri("ms-appx:///Resources/logo.png"));
+            });
+
+            return player;
+        }).InSingletonScope();
+
+        // Register GlobalHotkeyService as singleton
+        builder.Bind<Services.GlobalHotkeyService>().ToSelf().InSingletonScope();
+
+        // Register DbService as singleton
+        builder.Bind<Services.IDbService>().To<Services.DbService>().InSingletonScope();
+
+        // Register UpdateService as singleton
+        builder.Bind<Services.UpdateService>().ToSelf().InSingletonScope();
+
+        // Theme service removed in WPF-UI 3.x - use centralized SystemThemeService
+        AutoMidiPlayer.WPF.Services.SystemThemeService.Start();
+    }
+}

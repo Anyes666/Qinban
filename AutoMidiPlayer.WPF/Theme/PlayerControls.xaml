@@ -1,0 +1,316 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:AutoMidiPlayer.WPF.Controls">
+
+
+    <!-- Player control button style with clean hover (no background, icon turns white) -->
+    <Style x:Key="PlayerControlButton"
+           TargetType="Button">
+        <Setter Property="Background"
+                Value="Transparent"/>
+        <Setter Property="BorderThickness"
+                Value="0"/>
+        <Setter Property="Padding"
+                Value="8"/>
+        <Setter Property="Cursor"
+                Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="Transparent"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsHitTestVisible"
+                     Value="False">
+                <Setter Property="Opacity"
+                        Value="0.4"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Path style for scaling icons inside buttons with smooth transitions -->
+    <Style x:Key="PlayerControlIcon"
+           TargetType="Path">
+        <Setter Property="Stretch"
+                Value="Uniform"/>
+        <Setter Property="RenderTransformOrigin"
+                Value="0.5,0.5"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform x:Name="IconScale"
+                                ScaleX="1"
+                                ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}"
+                         Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="(Path.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1.04"
+                                             Duration="0:0:0.12">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetProperty="(Path.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1.04"
+                                             Duration="0:0:0.12">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="(Path.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1"
+                                             Duration="0:0:0.12">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetProperty="(Path.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1"
+                                             Duration="0:0:0.12">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsPressed, RelativeSource={RelativeSource AncestorType=Button}}"
+                         Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="(Path.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1"
+                                             Duration="0:0:0.05">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetProperty="(Path.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1"
+                                             Duration="0:0:0.05">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Path style for prev/next icons with lighter hover color -->
+    <Style x:Key="PlayerControlViewboxIcon"
+           TargetType="Viewbox">
+        <Setter Property="RenderTransformOrigin"
+                Value="0.5,0.5"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform x:Name="IconScale"
+                                ScaleX="1"
+                                ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}"
+                         Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="(Viewbox.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1.04"
+                                             Duration="0:0:0.12">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetProperty="(Viewbox.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1.04"
+                                             Duration="0:0:0.12">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="(Viewbox.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1"
+                                             Duration="0:0:0.12">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetProperty="(Viewbox.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1"
+                                             Duration="0:0:0.12">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsPressed, RelativeSource={RelativeSource AncestorType=Button}}"
+                         Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="(Viewbox.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1"
+                                             Duration="0:0:0.05">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetProperty="(Viewbox.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1"
+                                             Duration="0:0:0.05">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+            </DataTrigger>
+            <Trigger Property="IsHitTestVisible"
+                     Value="False">
+                <Setter Property="Opacity"
+                        Value="0.4"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Play button (circle with inverted colors) -->
+    <Style x:Key="PlayPauseButton"
+           TargetType="Button"
+           BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Width"
+                Value="32"/>
+        <Setter Property="Height"
+                Value="32"/>
+        <Setter Property="Padding"
+                Value="0"/>
+        <Setter Property="Cursor"
+                Value="Hand"/>
+        <Setter Property="Background"
+                Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="Foreground"
+                Value="{DynamicResource ApplicationBackgroundBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid x:Name="RootGrid"
+                          RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform ScaleX="1"
+                                            ScaleY="1"/>
+                        </Grid.RenderTransform>
+                        <Ellipse Fill="{TemplateBinding Background}"/>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid"
+                                                         Storyboard.TargetProperty="(Grid.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         To="1.04"
+                                                         Duration="0:0:0.12">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid"
+                                                         Storyboard.TargetProperty="(Grid.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="1.04"
+                                                         Duration="0:0:0.12">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid"
+                                                         Storyboard.TargetProperty="(Grid.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         To="1"
+                                                         Duration="0:0:0.12">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid"
+                                                         Storyboard.TargetProperty="(Grid.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="1"
+                                                         Duration="0:0:0.12">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid"
+                                                         Storyboard.TargetProperty="(Grid.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         To="1"
+                                                         Duration="0:0:0.05">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid"
+                                                         Storyboard.TargetProperty="(Grid.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="1"
+                                                         Duration="0:0:0.05">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

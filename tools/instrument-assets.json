@@ -1,0 +1,89 @@
+[
+  {
+    "id": "windsong",
+    "url": "https://enka.network/ui/UI_ItemIcon_220025.png",
+    "originalAsset": "UI_ItemIcon_220025",
+    "path": "Assets/Instruments/windsong.png",
+    "sha256": "D2C4CADC4CF1350D487F6E6B4C3B9428F63AD45E7D4E6A63D5F3D21B2CABF6B9",
+    "copyright": "Game artwork belongs to HoYoverse; CDN mirror, identification use; not GPL/CC0 artwork."
+  },
+  {
+    "id": "floral",
+    "url": "https://enka.network/ui/UI_ItemIcon_220044.png",
+    "originalAsset": "UI_ItemIcon_220044",
+    "path": "Assets/Instruments/floral.png",
+    "sha256": "DCFA15E7A3FEEA0EC79049E1680CBACEC660D17DEBB1E0BFADFF0858B99901FD",
+    "copyright": "Game artwork belongs to HoYoverse; CDN mirror, identification use; not GPL/CC0 artwork."
+  },
+  {
+    "id": "vintage",
+    "url": "https://enka.network/ui/UI_ItemIcon_220066.png",
+    "originalAsset": "UI_ItemIcon_220066",
+    "path": "Assets/Instruments/vintage.png",
+    "sha256": "2CF5AF46E6B40BFA1302A194DA6885BF329C84D132A818032183F04A50D6F972",
+    "copyright": "Game artwork belongs to HoYoverse; CDN mirror, identification use; not GPL/CC0 artwork."
+  },
+  {
+    "id": "arataki",
+    "url": "https://enka.network/ui/UI_ItemIcon_220051.png",
+    "originalAsset": "UI_ItemIcon_220051",
+    "path": "Assets/Instruments/arataki.png",
+    "sha256": "B813432E1CCF0E170083C6A4FCB456B56B2F6FACE81DC17271BE1EE2F6626E80",
+    "copyright": "Game artwork belongs to HoYoverse; CDN mirror, identification use; not GPL/CC0 artwork."
+  },
+  {
+    "id": "qiyan",
+    "url": "https://enka.network/ui/UI_ItemIcon_220051.png",
+    "originalAsset": "UI_ItemIcon_220051",
+    "path": "Assets/Instruments/qiyan.png",
+    "sha256": "B813432E1CCF0E170083C6A4FCB456B56B2F6FACE81DC17271BE1EE2F6626E80",
+    "copyright": "Game artwork belongs to HoYoverse; CDN mirror, identification use; not GPL/CC0 artwork."
+  },
+  {
+    "id": "horn",
+    "url": "https://enka.network/ui/UI_ItemIcon_220097.png",
+    "originalAsset": "UI_ItemIcon_220097",
+    "path": "Assets/Instruments/horn.png",
+    "sha256": "DA4C7731BD6A407E24749FCB087EAF08BF4C26391A2A056B9AA62191AA9EFA1E",
+    "copyright": "Game artwork belongs to HoYoverse; CDN mirror, identification use; not GPL/CC0 artwork."
+  },
+  {
+    "id": "harmonic",
+    "url": "https://enka.network/ui/UI_ItemIcon_220129.png",
+    "originalAsset": "UI_ItemIcon_220129",
+    "path": "Assets/Instruments/harmonic.png",
+    "sha256": "CAE64CB61415B3464423564C1E48A30A9F99DF4C23EC8C2416D9140EBE6A418E",
+    "copyright": "Game artwork belongs to HoYoverse; CDN mirror, identification use; not GPL/CC0 artwork."
+  },
+  {
+    "id": "voice",
+    "url": "https://enka.network/ui/UI_AvatarIcon_Vodyanitsa.png",
+    "path": "Assets/Instruments/voice.png",
+    "sha256": "401347F6F5910F638EE998708F615C6CB6B94F774590B3F4BE335F37BE7610C8",
+    "copyright": "Game artwork belongs to HoYoverse; identification use only."
+  },
+  {
+    "id": "djem",
+    "url": "https://patchwiki.biligame.com/images/ys/f/f9/3t8hosvn8lui7ili35vno231qezb2na.png",
+    "sourcePage": "https://wiki.biligame.com/ys/聚聚鼓",
+    "path": "Assets/Instruments/djem.png",
+    "sha256": "3FE71D5578AE0FA97F2882D9E3EF03C0232352C1D3B0947D6A0E0D5FC5781BA0",
+    "copyright": "Game artwork belongs to HoYoverse; BWIKI mirror identification use, not GPL or CC0."
+  },
+  {
+    "id": "ukulele",
+    "url": "https://patchwiki.biligame.com/images/ys/5/50/r0j2n5say41n7ssbihych0ppaz3ivd3.png",
+    "sourcePage": "https://wiki.biligame.com/ys/悠可琴",
+    "path": "Assets/Instruments/ukulele.png",
+    "sha256": "756B9BF833D003E36F45E7A4B934EB01BD8ED763B246F600F38505E354C97A9E",
+    "copyright": "Game artwork belongs to HoYoverse; BWIKI mirror identification use, not GPL or CC0."
+  },
+  {
+    "id": "euphonia",
+    "url": "https://patchwiki.biligame.com/images/ys/7/7e/hzklda02h43kbtp4pktm3ky8zlehlti.png",
+    "sourcePage": "https://wiki.biligame.com/ys/余音",
+    "path": "Assets/Instruments/euphonia.png",
+    "sha256": "447EE77CDC42166B1EA39C1699697C30B9732D5412366233EED8651B424C50FF",
+    "copyright": "Game artwork belongs to HoYoverse; BWIKI mirror identification use, not GPL or CC0."
+  }
+]

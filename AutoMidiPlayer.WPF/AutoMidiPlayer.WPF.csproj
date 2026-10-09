@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+        <UseWPF>true</UseWPF>
+        <StartupObject>AutoMidiPlayer.WPF.App</StartupObject>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <Version>7.13.7</Version>
+        <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
+        <Nullable>enable</Nullable>
+        <RepositoryUrl>https://github.com/Jed556/AutoMidiPlayer</RepositoryUrl>
+        <Authors>Jed556</Authors>
+        <Product>Auto MIDI Player</Product>
+        <Company />
+        <Copyright>Copyright (c) 2026 Jed556</Copyright>
+        <Description>A MIDI to key player for in-game instruments. Supports games such as Genshin Impact, Heartopia, and Roblox.</Description>
+        <LangVersion>latest</LangVersion>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+        <AssemblyTitle>Auto MIDI Player</AssemblyTitle>
+        <AssemblyName>Auto MIDI Player</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
+        <PackageReference Include="Melanchall.DryWetMidi" Version="8.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.11" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.11" />
+        <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" PrivateAssets="All" />
+        <PackageReference Include="Sentry" Version="6.9.0" />
+        <PackageReference Include="Sentry.Profiling" Version="6.9.0" />
+        <PackageReference Include="SkiaSharp" Version="4.151.1" />
+        <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
+        <PackageReference Include="Stylet" Version="1.3.7" />
+        <PackageReference Include="WPF-UI" Version="4.3.0" />
+        <PackageReference Include="WPF-UI.Tray" Version="4.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\THIRD-PARTY-LICENSES.md">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="Resources\about-links.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\LICENSE.md">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AutoMidiPlayer.Data\AutoMidiPlayer.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Resource Include="Resources\**\*.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\audio\**\*.*">
+            <Link>Audio\%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>
+ 

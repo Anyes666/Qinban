@@ -1,0 +1,311 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="AutoMidiPlayer.Data.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <!-- Application Information & URLs -->
+    <Setting Name="LicenseUri" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">https://github.com/Jed556/AutoMidiPlayer/blob/main/LICENSE.md</Value>
+    </Setting>
+    <Setting Name="ThirdPartyLicenseUri" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">https://github.com/Jed556/AutoMidiPlayer/blob/main/THIRD-PARTY-NOTICES.md</Value>
+    </Setting>
+    <!-- Updates & Version Lifecycle -->
+    <Setting Name="AutoCheckUpdates" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="AutoDownloadUpdates" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="UpdateCheckFrequency" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">4</Value>
+    </Setting>
+    <Setting Name="IncludeBetaUpdates" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="UpgradeRequired" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <!-- Playback Engine & Note Processing -->
+    <Setting Name="HoldNotes" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="TransposeNotes" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="MergeNotes" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="MergeMilliseconds" Type="System.UInt32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="AutoCorrectThreshold" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">22</Value>
+    </Setting>
+    <Setting Name="PlayUnplayableOnIgnore" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="UseSpeakers" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AutoEnableListenMode" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="AutoDetectDefaultKey" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <!-- Default Song Metadata & Playback Defaults -->
+    <Setting Name="DefaultSongArtist" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DefaultSongAlbum" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DefaultSongDefaultKey" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="DefaultSongKey" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="DefaultSongTranspose" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="DefaultSongCustomBpm" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="DefaultSongSpeed" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="DefaultSongMergeNotes" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DefaultSongMergeMilliseconds" Type="System.UInt32" Scope="User">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="DefaultSongHoldNotes" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <!-- Player Selection State -->
+    <Setting Name="SelectedSpeed" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="SelectedLayout" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="SelectedLayoutName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">QWERTY</Value>
+    </Setting>
+    <Setting Name="SelectedInstrument" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="SelectedInstrumentByGame" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SelectedTransition" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <!-- Piano Pedals -->
+    <Setting Name="SustainEnabledByInstrument" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SustainEnabledByGame" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SustainKeyByLayout" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SostenutoKeyByLayout" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UnaCordaKeyByLayout" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <!-- Game Configurations -->
+    <Setting Name="GenshinLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">GenshinImpact.exe</Value>
+    </Setting>
+    <Setting Name="ActiveGenshin" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="WutheringWavesLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Client-Win64-Shipping.exe</Value>
+    </Setting>
+    <Setting Name="ActiveWutheringWaves" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="NTELocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">HTGame.exe</Value>
+    </Setting>
+    <Setting Name="ActiveNTE" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="WWMLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">WhereWindsMeet.exe</Value>
+    </Setting>
+    <Setting Name="ActiveWWM" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="BPSRLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">BPSR.exe</Value>
+    </Setting>
+    <Setting Name="ActiveBPSR" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="SkyLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Sky.exe</Value>
+    </Setting>
+    <Setting Name="ActiveSky" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="RobloxLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">RobloxPlayerBeta.exe</Value>
+    </Setting>
+    <Setting Name="ActiveRoblox" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="HeartopiaLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">xdt.exe</Value>
+    </Setting>
+    <Setting Name="ActiveHeartopia" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="CoreKeeperLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">CoreKeeper.exe</Value>
+    </Setting>
+    <Setting Name="ActiveCoreKeeper" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="HPMALocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Harry Potter Magic Awakened.exe</Value>
+    </Setting>
+    <Setting Name="ActiveHPMA" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <!-- MIDI Library & Folder Scan -->
+    <Setting Name="MidiFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="AutoScanMidiFolder" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ExcludedAutoImportPaths" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SongsSortMode" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="SongsSortAscending" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <!-- Playback Queue & Session State -->
+    <Setting Name="CurrentSongId" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="CurrentSongPosition" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="QueueSongIds" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="QueueShuffle" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="QueueLoopMode" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <!-- Input Simulation & Keyboard Presses -->
+    <Setting Name="UseDirectInput" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="UseWindowMessage" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="KeyboardPressDelayMs" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">50</Value>
+    </Setting>
+    <Setting Name="EnableKeyUp" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="MouseStopClickMode" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <!-- Hotkeys -->
+    <Setting Name="HotkeysEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="HotkeyPlayPause" Type="System.String" Scope="User">
+      <Value Profile="(Default)">3|18</Value>
+    </Setting>
+    <Setting Name="HotkeyNext" Type="System.String" Scope="User">
+      <Value Profile="(Default)">3|25</Value>
+    </Setting>
+    <Setting Name="HotkeyPrevious" Type="System.String" Scope="User">
+      <Value Profile="(Default)">3|23</Value>
+    </Setting>
+    <Setting Name="HotkeySpeedUp" Type="System.String" Scope="User">
+      <Value Profile="(Default)">3|24</Value>
+    </Setting>
+    <Setting Name="HotkeySpeedDown" Type="System.String" Scope="User">
+      <Value Profile="(Default)">3|26</Value>
+    </Setting>
+    <Setting Name="HotkeyPanic" Type="System.String" Scope="User">
+      <Value Profile="(Default)">3|13</Value>
+    </Setting>
+    <!-- UI & Appearance -->
+    <Setting Name="AppTheme" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">-1</Value>
+    </Setting>
+    <Setting Name="AccentColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#1DB954</Value>
+    </Setting>
+    <Setting Name="SmoothScrollingEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="LastViewedPage" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Songs</Value>
+    </Setting>
+    <Setting Name="PageCaching" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <!-- Diagnostics, Logging & Telemetry -->
+    <Setting Name="DebugModeEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="CrashLogVerbosity" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="LogPlayedNotes" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="TelemetryOptIn" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ReportedOptEventStatus" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="LastOptedOutLogDate" Type="System.DateTime" Scope="User">
+      <Value Profile="(Default)">1900-01-01</Value>
+    </Setting>
+    <!-- Cache Management -->
+    <Setting Name="CacheAutoCleanInterval" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="CacheMaxSizeMB" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <!-- Onboarding & Safety Notifications -->
+    <Setting Name="HasShownFirstLaunch" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="NotifyAccountRisk" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <!-- Database Connection -->
+    <Setting Name="SqliteConnection" Type="(Connection string)" Scope="Application">
+      <DesignTimeValue Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;SerializableConnectionString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;ConnectionString&gt;history.db&lt;/ConnectionString&gt;
+&lt;/SerializableConnectionString&gt;</DesignTimeValue>
+      <Value Profile="(Default)">history.db</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

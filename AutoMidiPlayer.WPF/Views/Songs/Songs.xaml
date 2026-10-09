@@ -1,0 +1,163 @@
+<UserControl
+    x:Class="AutoMidiPlayer.WPF.Views.SongsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    mc:Ignorable="d"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:s="https://github.com/canton7/Stylet"
+    xmlns:viewModels="clr-namespace:AutoMidiPlayer.WPF.ViewModels"
+    xmlns:controls="clr-namespace:AutoMidiPlayer.WPF.Controls"
+    xmlns:converters="clr-namespace:AutoMidiPlayer.WPF.Converters"
+    xmlns:button="clr-namespace:AutoMidiPlayer.WPF.Controls.SelectorPopupButton.Button"
+    d:DataContext="{d:DesignInstance Type=viewModels:SongsViewModel}">
+
+    <UserControl.Resources>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Bar: Search and Sort -->
+        <Grid Grid.Row="0"
+              Margin="0,0,0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Search Box with Add Button -->
+            <controls:SimpleStackPanel Grid.Column="0"
+                                       Orientation="Horizontal"
+                                       Spacing="4">
+                <ui:TextBox PlaceholderText="Search title, album, artist..."
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            Width="250"
+                            Icon="Search12"
+                            VerticalAlignment="Center"/>
+                <controls:Button Variant="Ghost"
+                                 Command="{s:Action OpenFile}"
+                                 Padding="8"
+                                 ToolTip="Import MIDI files">
+                    <Path Data="{StaticResource AddIconGeometry}"
+                          Fill="{DynamicResource TextFillColorPrimaryBrush}"
+                          Stretch="Uniform"
+                          Width="16"
+                          Height="16"/>
+                </controls:Button>
+                <controls:BusyActionButton Width="36"
+                                           Height="32"
+                                           Visibility="{Binding CanManuallyScanMidiFolder, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
+                                           IsBusy="{Binding IsScanningMidiFolder}"
+                                           MinimumVisibleDuration="0:0:1"
+                                           Command="{s:Action ScanMidiFolder}"
+                                           ButtonPadding="7"
+                                           ButtonToolTip="Refresh/Scan MIDI folder for new MIDI files"
+                                           IconSymbol="FolderSync20"
+                                           IconFontSize="17"/>
+                <controls:Button Variant="Ghost"
+                                 Command="{s:Action ShowMissingFilesDialog}"
+                                 Padding="8"
+                                 ToolTip="{Binding FileIssuesButtonToolTip}"
+                                 Visibility="{Binding HasFileErrors, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                    <ui:SymbolIcon Symbol="{Binding FileIssuesSymbol}"
+                                   FontSize="{Binding FileIssuesIconSize}"
+                                   Filled="{Binding FileIssuesIconFilled}">
+                        <ui:SymbolIcon.Style>
+                            <Style TargetType="ui:SymbolIcon">
+                                <Setter Property="Foreground"
+                                        Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:Button}}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasNonDuplicateFileErrors}"
+                                                 Value="True">
+                                        <Setter Property="Foreground"
+                                                Value="#FFB900"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:SymbolIcon.Style>
+                    </ui:SymbolIcon>
+                </controls:Button>
+                <TextBlock Margin="10,0"
+                           VerticalAlignment="Center"
+                           Opacity="0.7">
+                    <Run Text="{Binding Tracks.Count, Mode=OneWay}"/> songs
+                </TextBlock>
+            </controls:SimpleStackPanel>
+
+            <!-- Sort Controls -->
+            <controls:SimpleStackPanel Grid.Column="1"
+                                       Orientation="Horizontal"
+                                       Spacing="8">
+                <!-- Sort Dropdown -->
+                <button:StandardDropdown HorizontalAlignment="Left"
+                                         ItemsSource="{x:Static viewModels:SongsViewModel.SortModeOptions}"
+                                         SelectedIndex="{Binding SortModeIndex, Mode=TwoWay}"
+                                         ToolTip="Sort by"/>
+
+                <controls:RotateToggleButton
+                    IsRotated="{Binding IsDescending}"
+                    Glyph="&#xE74A;"
+                    GlyphFontFamily="{StaticResource MdlFontFamily}"
+                    GlyphFontSize="12"
+                    ButtonPadding="8,6"
+                    Command="{s:Action ToggleSortDirection}"
+                    ButtonToolTip="Toggle sort direction"/>
+            </controls:SimpleStackPanel>
+        </Grid>
+
+        <!-- Track List -->
+        <controls:SongListControl x:Name="SongList"
+                                  Grid.Row="1"
+                                  ItemsSource="{Binding SortedTracks}"
+                                  SelectedItem="{Binding SelectedFile, Mode=TwoWay}"
+                                  OpenedFile="{Binding QueueView.OpenedFile}"
+                                  IsPlaying="{Binding Playback.IsPlaying}"
+                                  AllowReorder="{Binding IsCustomSort}"
+                                  ItemDoubleClick="TrackList_ItemDoubleClick"
+                                  PlayPauseClick="TrackList_PlayPauseClick"
+                                  MenuClick="TrackList_MenuClick">
+            <controls:SongListControl.ItemContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Add to Queue"
+                              Click="AddToQueue_Click">
+                        <MenuItem.Icon>
+                            <Path Data="{StaticResource AddQueueIconGeometry}"
+                                  Fill="{DynamicResource TextFillColorPrimaryBrush}"
+                                  Stretch="Uniform"
+                                  Width="12"
+                                  Height="12"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Edit"
+                              Click="EditSong_Click"
+                              Visibility="{Binding PlacementTarget.Tag.IsMultiSelect, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                        <MenuItem.Icon>
+                            <Path Data="{StaticResource EditIconGeometry}"
+                                  Fill="{DynamicResource TextFillColorPrimaryBrush}"
+                                  Stretch="Uniform"
+                                  Width="12"
+                                  Height="12"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Delete"
+                              Click="DeleteSong_Click">
+                        <MenuItem.Icon>
+                            <Path Data="{StaticResource DeleteIconGeometry}"
+                                  Fill="{DynamicResource TextFillColorPrimaryBrush}"
+                                  Stretch="Uniform"
+                                  Width="12"
+                                  Height="12"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </controls:SongListControl.ItemContextMenu>
+        </controls:SongListControl>
+    </Grid>
+</UserControl>

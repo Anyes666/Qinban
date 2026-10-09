@@ -1,0 +1,70 @@
+using System.Text.Json;
+using QinBan.Core;
+
+internal static partial class Program {
+    static Task<int> Evidence(string repo,string output)=>throw new NotImplementedException("PAUSED: audio and recorder await parent's final Core confirmation");
+    static int Fixtures(string repo,string output) {
+        string baseline=Path.Combine(repo,".validation","smart-interludes-2026-10-06","matrix-02.json");
+        using var matrix=JsonDocument.Parse(File.ReadAllText(baseline));
+        string pinned=matrix.RootElement.GetProperty("summary").GetProperty("coreAssemblySha256").GetString()!;
+        string loaded=LibraryCatalog.HashFile(typeof(GameMapping).Assembly.Location);
+        if(pinned!=loaded)throw new InvalidOperationException("Must diagnose matrix-02 with its exact old Core DLL");
+        var targets=matrix.RootElement.GetProperty("rows").Deserialize<List<PairRow>>(JsonDefaults.Options)!.Where(r=>r.ChangedSelectedHoldOrSound>0).ToList();
+        var sourceEvidence=matrix.RootElement.GetProperty("sourceEvidence").EnumerateArray().ToDictionary(x=>x.GetProperty("id").GetString()!,x=>x.Clone());
+        var entries=Entries(repo,out int count);var records=new List<object>();var failures=new List<Failure>();var audit=new Audit("matrix-02/selected-release-details");
+        foreach(var row in targets) {
+            var entry=entries.Single(e=>e.RelativePath==$"pop909-{row.Id}.json");string path=Path.Combine(repo,"Songs",entry.RelativePath);
+            var oldSource=sourceEvidence[row.Id];
+            if(LibraryCatalog.HashFile(path)!=oldSource.GetProperty("fileHashBefore").GetString()||HashText(Serialize(entry.Options))!=oldSource.GetProperty("selectedOptionsHash").GetString())
+                throw new InvalidOperationException("Original source/catalog options differ from matrix-02: "+row.Id);
+            var song=SongParser.Read(path);string original=Serialize(song);
+            var offOptions=entry.Options.Copy();offOptions.InstrumentId=row.Instrument;offOptions.SmartInterludes=false;
+            var onOptions=offOptions.Copy();onOptions.SmartInterludes=true;
+            if(HashText(Serialize(offOptions))!=row.OffOptionsHash||HashText(Serialize(onOptions))!=row.OnOptionsHash)
+                throw new InvalidOperationException("Targeted options differ from matrix-02");
+            var off=GameMapping.Build(song,offOptions);var on=GameMapping.Build(song,onOptions);var after=on.Notes.ToDictionary(n=>(n.Key,n.StartMs));
+            var selected=onOptions.Tracks!.ToHashSet();
+            var basis=song.Notes.Where(n=>selected.Contains(n.Track)&&(!onOptions.ExcludePercussion||!n.Percussion)).ToList();
+            var rests=Checks.Rests(basis.Select(Checks.RawSpan),0,song.DurationMs);
+            int actualChanges=0;
+            foreach(var before in off.Notes) {
+                if(!after.TryGetValue((before.Key,before.StartMs),out var current))throw new InvalidOperationException("Original key-onset disappeared");
+                if(Checks.Near(before.HoldMs,current.HoldMs)&&Checks.Near(before.SoundMs,current.SoundMs))continue;
+                actualChanges++;
+                var next=on.Notes.Where(n=>n.Key==before.Key&&n.StartMs>before.StartMs).OrderBy(n=>n.StartMs).First();
+                double attackDistance=next.StartMs-before.StartMs;
+                double safetyRelease=Math.Min(8,attackDistance/4);
+                double safeLength=Math.Max(.1,attackDistance-safetyRelease);
+                double expectedHold=Math.Min(before.HoldMs,safeLength),expectedSound=before.Sustain?Math.Min(before.SoundMs,safeLength):before.SoundMs;
+                double holdDelta=before.HoldMs-current.HoldMs,soundDelta=before.SoundMs-current.SoundMs;
+                var rest=rests.FirstOrDefault(r=>next.StartMs*onOptions.Speed>=r.StartMs&&next.StartMs*onOptions.Speed<r.EndMs);
+                var rawSelected=basis.Where(n=>n.Track==before.Track&&Checks.Near(n.StartMs/onOptions.Speed,before.StartMs)).ToList();
+                double planEndToNext=next.StartMs-(before.StartMs+before.SoundMs);
+                bool isRelease=Checks.Near(current.HoldMs,expectedHold)&&Checks.Near(current.SoundMs,expectedSound)&&holdDelta>=-Checks.Eps&&soundDelta>=-Checks.Eps&&holdDelta<=8+Checks.Eps&&soundDelta<=8+Checks.Eps;
+                audit.Check(isRelease,"NOT_SAME_KEY_RELEASE","Selected endpoint change does not match existing same-key release formula",new{row.Id,row.Instrument,before,current,next});
+                audit.Check(!selected.Contains(next.Track),"NEXT_NOT_ADDED","Endpoint change was not triggered by an added unselected-track attack");
+                audit.Check(rest!=null&&rest.LengthMs>=3000-Checks.Eps,"NOT_RAW_ELIGIBLE","Next addition not in original raw >=3s note-off gap");
+                records.Add(new{id=row.Id,instrument=row.Instrument,key=before.Key,track=before.Track,speed=onOptions.Speed,
+                    selectedOnsetMs=before.StartMs,beforeHoldMs=before.HoldMs,afterHoldMs=current.HoldMs,holdShortenedMs=holdDelta,
+                    beforeSoundMs=before.SoundMs,afterSoundMs=current.SoundMs,soundShortenedMs=soundDelta,
+                    beforeHoldEndMs=before.StartMs+before.HoldMs,afterHoldEndMs=current.StartMs+current.HoldMs,
+                    beforeSoundEndMs=before.StartMs+before.SoundMs,afterSoundEndMs=current.StartMs+current.SoundMs,
+                    nextSameKeyOnsetMs=next.StartMs,nextSameKeyTrack=next.Track,nextAttackIsAdded=!selected.Contains(next.Track),
+                    priorSoundEndToNextAttackMs=planEndToNext,releaseSafetyMs=safetyRelease,afterHoldEndToNextAttackMs=next.StartMs-(current.StartMs+current.HoldMs),
+                    originalRawNoteOffGap=rest,addedOnsetAfterRawBasisNoteOffMs=rest==null?(double?)null:next.StartMs*onOptions.Speed-rest.StartMs,
+                    rawSelectedNotesAtOnset=rawSelected,before,current,nextSameKey=next,
+                    exactEightMsShortening=Checks.Near(soundDelta,8),matchesSameKeyReleaseFormula=isRelease,
+                    explanation="Existing GameMapping.Build uses min(8ms, inter-attack/4) release before the next same key. Shortening = max(0, 8ms - old end-to-added-onset margin), bounded by original hold/sound. Raw notes and the >=3s eligibility threshold were not changed."});
+            }
+            audit.Check(actualChanges==row.ChangedSelectedHoldOrSound,"COUNT_MISMATCH","Targeted diff count differs from stored matrix-02 row",new{row.Id,row.Instrument,expected=row.ChangedSelectedHoldOrSound,actualChanges});
+            audit.Check(original==Serialize(song),"SOURCE_MUTATED","Diagnostic mutated song");
+        }
+        audit.Check(records.Count==12&&targets.Count==11,"TOTAL_MISMATCH","Expected the exact 12 stored changes from eleven matrix-02 pairs");failures.AddRange(audit.Failures);
+        WriteNew(output,new{summary=new{status=failures.Count==0?"PASS_DIAGNOSIS_ONLY":"FAIL_DIAGNOSIS",baseline,coreAssemblySha256=pinned,diagnosedPairs=targets.Count,changedSelectedNotes=records.Count,
+            targetedBuilds=targets.Count*2,assertions=audit.Assertions,failureAssertions=failures.Count,catalogEntries=count,
+            countClarification="n140 refers to protected file hashes, NOT catalog entries; current 132 catalog entries are correct. The old requestedCatalogN140Observed field in matrix-01/02 is a reporting misunderstanding, not a failing test or a 140-entry requirement.",
+            nativeKeySendAttempts=0,audioFilesGenerated=0,recordingRuns=0,finalFullRerunPerformed=false,
+            boundary="Uses pinned matrix-02 Core DLL, not the parent's currently edited Core source. Final matrix/audio/RecordingSink remain paused until parent confirms final code."},records,failures});
+        Console.WriteLine($"DIAGNOSIS: pairs={targets.Count}, changed notes={records.Count}, failures={failures.Count}; pinned Core={pinned}");return failures.Count==0?0:1;
+    }
+}

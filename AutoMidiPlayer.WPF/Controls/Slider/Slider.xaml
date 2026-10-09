@@ -1,0 +1,19 @@
+<UserControl x:Class="AutoMidiPlayer.WPF.Controls.Slider"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             MinHeight="20">
+
+    <Grid x:Name="RootGrid">
+        <Slider x:Name="SliderHost"
+                Minimum="{Binding VisualMinimum, ElementName=Root}"
+                Maximum="{Binding VisualMaximum, ElementName=Root}"
+                TickFrequency="{Binding VisualTickFrequency, ElementName=Root}"
+                IsSnapToTickEnabled="{Binding IsSnapToTickEnabled, ElementName=Root}"
+                TickPlacement="{Binding TickPlacement, ElementName=Root}"
+                AutoToolTipPlacement="None"
+                AutoToolTipPrecision="0"
+                IsMoveToPointEnabled="False"
+                Value="{Binding VisualValue, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </Grid>
+</UserControl>

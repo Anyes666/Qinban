@@ -1,0 +1,22 @@
+<ui:ContentDialog x:Class="AutoMidiPlayer.WPF.Dialogs.UpdateProgressDialog"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                  Title="Updating">
+
+    <StackPanel Background="Transparent" Margin="0,0,12,0" Width="400">
+        <TextBlock Text="{Binding ProgressText}" Margin="0,0,0,4"/>
+        <ProgressBar IsIndeterminate="{Binding IsProgressIndeterminate}" Maximum="100" Value="{Binding ProgressPercentage}" Height="4"/>
+        <TextBlock Text="{Binding ProgressDetailText}" Margin="0,4,0,0" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ProgressDetailText}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+    </StackPanel>
+</ui:ContentDialog>

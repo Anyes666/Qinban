@@ -1,0 +1,274 @@
+<Window x:Class="QinBan.Desktop.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:QinBan.Desktop" Style="{StaticResource {x:Type Window}}" Title="琴伴 · 原神演奏工作台" Width="1460" Height="940" MinWidth="1080" MinHeight="720" WindowStartupLocation="CenterScreen" AllowDrop="True" Drop="Window_Drop" Loaded="Window_Loaded" Closed="Window_Closed" SizeChanged="Window_SizeChanged" PreviewKeyDown="Window_PreviewKeyDown">
+<Grid x:Name="AppSurface" Background="{StaticResource BaseBrush}" ClipToBounds="True">
+  <local:WallpaperView x:Name="WallpaperLayer" IsHitTestVisible="False"/>
+  <Border x:Name="WallpaperMask" Background="#0B101B" Opacity="0.32" IsHitTestVisible="False"/>
+  <Border IsHitTestVisible="False"><Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,0"><GradientStop Color="#AD0B101B" Offset="0"/><GradientStop Color="#870B101B" Offset="0.35"/><GradientStop Color="#150B101B" Offset="1"/></LinearGradientBrush></Border.Background></Border>
+  <Border VerticalAlignment="Top" Height="110" IsHitTestVisible="False"><Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#AA0B101B" Offset="0"/><GradientStop Color="#AA0B101B" Offset="0.70"/><GradientStop Color="#000B101B" Offset="1"/></LinearGradientBrush></Border.Background></Border>
+  <Grid>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="164"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="128"/></Grid.RowDefinitions>
+    <Border Grid.RowSpan="2" Background="#DE0C1421" BorderBrush="#10FFFFFF" BorderThickness="0,0,1,0">
+      <DockPanel Margin="12,28,12,18">
+        <StackPanel DockPanel.Dock="Top" Margin="14,0,0,30"><TextBlock Text="琴伴" FontSize="28" FontWeight="SemiBold"/><TextBlock Text="QINBAN" FontFamily="Segoe UI" FontSize="10" Foreground="{DynamicResource AccentBrush}" Margin="1,6,0,0"/></StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Margin="14,0,10,0"><TextBlock x:Name="HotkeyHint" Text="Shift+Enter 开始&#10;F8 暂停 · F9 停止" Style="{StaticResource Muted}" FontSize="11" LineHeight="20" TextWrapping="Wrap"/><TextBlock Text="本地运行 · 0.4.2" Style="{StaticResource Muted}" FontSize="10" Margin="0,12,0,0"/></StackPanel>
+        <StackPanel><Button x:Name="NavLibrary" Style="{StaticResource Nav}" Tag="library" Click="Nav_Click" AutomationProperties.Name="曲库"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="16" Width="26" VerticalAlignment="Center"/><TextBlock Text="曲库"/></StackPanel></Button>
+<Button x:Name="NavFavorites" Style="{StaticResource Nav}" Tag="favorites" Click="Nav_Click" AutomationProperties.Name="收藏"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xEB51;" FontFamily="Segoe MDL2 Assets" FontSize="16" Width="26" VerticalAlignment="Center"/><TextBlock Text="收藏"/></StackPanel></Button>
+<Button x:Name="NavQueue" Style="{StaticResource Nav}" Tag="queue" Click="Nav_Click" AutomationProperties.Name="播放队列"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8FD;" FontFamily="Segoe MDL2 Assets" FontSize="16" Width="26" VerticalAlignment="Center"/><TextBlock Text="播放队列"/></StackPanel></Button>
+<Button x:Name="NavEditor" Style="{StaticResource Nav}" Tag="editor" Click="Nav_Click" AutomationProperties.Name="谱子工坊"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="16" Width="26" VerticalAlignment="Center"/><TextBlock Text="谱子工坊"/></StackPanel></Button>
+<Button x:Name="NavAppearance" Style="{StaticResource Nav}" Tag="appearance" Click="Nav_Click" AutomationProperties.Name="外观背景"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE790;" FontFamily="Segoe MDL2 Assets" FontSize="16" Width="26" VerticalAlignment="Center"/><TextBlock Text="外观背景"/></StackPanel></Button>
+<Button x:Name="NavSettings" Style="{StaticResource Nav}" Tag="settings" Click="Nav_Click" AutomationProperties.Name="安全设置"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="16" Width="26" VerticalAlignment="Center"/><TextBlock Text="安全设置"/></StackPanel></Button>
+<Button x:Name="NavHelp" Style="{StaticResource Nav}" Tag="help" Click="Nav_Click" AutomationProperties.Name="使用指南"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE897;" FontFamily="Segoe MDL2 Assets" FontSize="16" Width="26" VerticalAlignment="Center"/><TextBlock Text="使用指南"/></StackPanel></Button></StackPanel>
+      </DockPanel>
+    </Border>
+    <Grid Grid.Column="1" Margin="24,22,24,0">
+      <Grid.RowDefinitions><RowDefinition Height="68"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+      <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <StackPanel><TextBlock x:Name="PageTitle" Text="我的曲库" FontSize="22" FontWeight="SemiBold"/><TextBlock x:Name="PageSubtitle" Text="默认展示中文大众主力；全部曲库可查看其它来源。" Style="{StaticResource Muted}" FontSize="12" Margin="0,7,0,0"/></StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top"><Button Content="外观" Click="AppearanceNav_Click" Style="{StaticResource Subtle}" Margin="0,0,8,0" ToolTip="内置背景与本地图片设置"/><Button x:Name="ImportButton" Content="导入谱子" Style="{StaticResource Primary}" Click="Import_Click" Margin="0,0,8,0" ToolTip="读取本地 MIDI / TXT / JSON，不上传"/><Button Content="文件夹" Click="ImportFolder_Click" Style="{StaticResource Subtle}" ToolTip="批量导入当前文件夹的谱子"/></StackPanel>
+      </Grid>
+      <Grid x:Name="Workbench" Grid.Row="1" Margin="0,0,0,16">
+        <Grid.ColumnDefinitions><ColumnDefinition x:Name="LibraryColumn" Width="264"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Border xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LibraryPanel" Background="{DynamicResource PanelBrush}" CornerRadius="16" Padding="16">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <StackPanel>
+      <DockPanel Margin="0,0,0,14">
+        <TextBlock Text="曲谱库" FontSize="14" FontWeight="SemiBold" />
+        <TextBlock x:Name="LibraryCount" DockPanel.Dock="Right" HorizontalAlignment="Right" Style="{StaticResource Muted}" FontSize="11" />
+      </DockPanel>
+      <Grid>
+        <TextBox x:Name="SearchBox" AutomationProperties.Name="搜索曲名、歌手、语种、专辑、版本、别名、拼音或首字母" ToolTip="支持曲名、歌手、语种、专辑、版本组合搜索（关键词用空格分隔），也支持别名、拼音和首字母；只在本机搜索" TextChanged="Search_Changed" Padding="10,9" />
+        <TextBlock Text="曲名 / 歌手 / 语种 / 专辑 / 版本…" TextTrimming="CharacterEllipsis" FontSize="12" Margin="12,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock" BasedOn="{StaticResource Muted}">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+      </Grid>
+      <TextBlock x:Name="LibraryScopeHint" Text="默认展示中文大众主力；未标注语种不等于英文。" Style="{StaticResource Muted}" FontSize="10" Margin="2,6,0,0" TextTrimming="CharacterEllipsis" ToolTip="中文主力与全库语言分布" />
+      <Grid Margin="0,10,0,12">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="8" />
+          <ColumnDefinition Width="88" />
+        </Grid.ColumnDefinitions>
+        <ComboBox x:Name="FilterCombo" SelectionChanged="Filter_Changed" FontSize="12" AutomationProperties.Name="曲库筛选">
+          <ComboBoxItem Content="全部曲库" ToolTip="查看所有语言和未标注语种的曲谱；未标注不等于英文" />
+          <ComboBoxItem Content="我的导入" />
+          <ComboBoxItem Content="内置曲谱" />
+          <ComboBoxItem Content="最近播放" />
+          <ComboBoxItem Content="公开源样本" />
+          <ComboBoxItem Content="中文流行候选" ToolTip="查看带显式中文/粤语流行标签的全部候选；不把平台实时热度或授权状态混入分类" />
+          <ComboBoxItem Content="中文大众主力（推荐）" ToolTip="默认入口：仅筛选同时带有显式“大众优先”标签和中文/粤语标签的编辑精选；不从标题或未标语言推断，也不等同平台实时榜单" />
+          <ComboBoxItem Content="语种待核验" ToolTip="查看没有明确语种标签的条目；它们不自动算作英文或中文" />
+        </ComboBox>
+        <ComboBox x:Name="SortCombo" Grid.Column="2" SelectionChanged="Filter_Changed" FontSize="12" AutomationProperties.Name="排序">
+          <ComboBoxItem Content="添加顺序" />
+          <ComboBoxItem Content="按曲名" />
+          <ComboBoxItem Content="按时长" />
+          <ComboBoxItem Content="中文优先" ToolTip="中文流行优先：先显示大众优先中文条目，再显示其他中文流行候选，最后显示其他谱目" />
+        </ComboBox>
+      </Grid>
+      <StackPanel Margin="0,0,0,10">
+        <DockPanel>
+          <Button x:Name="LibraryToolsButton" Content="筛选 / 歌单" Click="LibraryTools_Click" Style="{StaticResource Subtle}" Padding="8,5" MinHeight="30" AutomationProperties.Name="展开曲库质量筛选与歌单管理" />
+          <TextBlock x:Name="LibraryLoadingText" Text="查询中…" Visibility="Collapsed" Style="{StaticResource Muted}" FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,0,0" />
+        </DockPanel>
+        <StackPanel x:Name="LibraryToolsPanel" Visibility="Collapsed" Margin="0,8,0,0">
+          <ComboBox x:Name="QualityCombo" SelectionChanged="Filter_Changed" FontSize="12" AutomationProperties.Name="曲谱质量状态筛选">
+            <ComboBoxItem Content="全部审核状态" />
+            <ComboBoxItem Content="来源时序已校验" />
+            <ComboBoxItem Content="尚未人工精校" />
+            <ComboBoxItem Content="教学 / 练习" />
+          </ComboBox>
+          <ComboBox x:Name="PlaylistCombo" SelectionChanged="Filter_Changed" FontSize="12" Margin="0,8,0,0" AutomationProperties.Name="我的歌单">
+            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Display}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <WrapPanel Margin="0,6,0,0">
+            <Button x:Name="PlaylistNewButton" Content="新建" Click="PlaylistNew_Click" Style="{StaticResource Subtle}" Padding="6,4" MinHeight="28" FontSize="11" />
+            <Button x:Name="PlaylistRenameButton" Content="改名" Click="PlaylistRename_Click" Style="{StaticResource Subtle}" Padding="6,4" MinHeight="28" FontSize="11" Margin="4,0,0,0" />
+            <Button x:Name="PlaylistDeleteButton" Content="删除歌单" Click="PlaylistDelete_Click" Style="{StaticResource Subtle}" Padding="6,4" MinHeight="28" FontSize="11" Margin="4,0,0,0" />
+          </WrapPanel>
+          <WrapPanel Margin="0,4,0,0">
+            <Button x:Name="PlaylistAddButton" Content="加入所选" Click="PlaylistAdd_Click" Style="{StaticResource Subtle}" Padding="6,4" MinHeight="28" FontSize="11" ToolTip="多选时加入所选曲谱；没有多选时加入右侧当前曲谱" />
+            <Button x:Name="PlaylistRemoveButton" Content="移出所选" Click="PlaylistRemove_Click" Style="{StaticResource Subtle}" Padding="6,4" MinHeight="28" FontSize="11" Margin="4,0,0,0" />
+            <Button x:Name="BulkFavoriteButton" Content="收藏所选" Click="BulkFavorite_Click" Style="{StaticResource Subtle}" Padding="6,4" MinHeight="28" FontSize="11" Margin="4,0,0,0" />
+          </WrapPanel>
+          <Popup x:Name="PlaylistNamePopup" Placement="Bottom" PlacementTarget="{Binding ElementName=PlaylistCombo}" StaysOpen="False" AllowsTransparency="True">
+            <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="10" Padding="14" Width="280">
+              <StackPanel>
+                <TextBlock x:Name="PlaylistPopupTitle" Text="新建歌单" Foreground="{DynamicResource TextBrush}" Margin="0,0,0,10" />
+                <TextBox x:Name="PlaylistNameBox" MaxLength="80" PreviewKeyDown="PlaylistName_KeyDown" AutomationProperties.Name="歌单名称" />
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                  <Button x:Name="PlaylistConfirmButton" Content="保存" Click="PlaylistConfirm_Click" Style="{StaticResource Primary}" />
+                  <Button Content="取消" Click="PlaylistCancel_Click" Margin="8,0,0,0" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </Popup>
+        </StackPanel>
+      </StackPanel>
+    </StackPanel>
+    <Grid Grid.Row="1">
+      <ListBox x:Name="SongList" SelectionChanged="Song_Selected" AutomationProperties.Name="曲库歌曲" SelectionMode="Extended" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel" ScrollViewer.CanContentScroll="True" ScrollViewer.PanningMode="VerticalOnly" local:SmoothScroll.IsEnabled="True">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="36" />
+              </Grid.ColumnDefinitions>
+              <StackPanel>
+                <TextBlock Text="{Binding Title}" FontSize="13" TextTrimming="CharacterEllipsis" ToolTip="{Binding Title}" />
+                <TextBlock Text="{Binding MetadataText}" Style="{StaticResource Muted}" FontSize="11" Margin="0,6,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding MetadataTooltip}" />
+                <TextBlock Text="{Binding QualityText}" Style="{StaticResource Muted}" FontSize="10" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding QualityText}" />
+              </StackPanel>
+              <TextBlock Grid.Column="1" Text="{Binding DurationText}" Style="{StaticResource Muted}" FontFamily="Segoe UI" FontSize="10" HorizontalAlignment="Right" Margin="5,2,0,0" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <VirtualizingStackPanel />
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+      </ListBox>
+      <TextBlock x:Name="EmptyState" Visibility="Collapsed" Text="没有找到歌曲&#10;清空搜索，或导入新的谱子。" Style="{StaticResource Muted}" TextWrapping="Wrap" LineHeight="23" Margin="12,24" />
+    </Grid>
+    <StackPanel Grid.Row="2" Margin="0,10,0,0">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Button x:Name="PreviousPageButton" Content="上一页" Click="PreviousPage_Click" Style="{StaticResource Subtle}" Padding="8,5" MinHeight="30" IsEnabled="False" />
+        <TextBlock x:Name="PageCountText" Grid.Column="1" Text="1 / 1 页" Style="{StaticResource Muted}" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Button x:Name="NextPageButton" Grid.Column="2" Content="下一页" Click="NextPage_Click" Style="{StaticResource Subtle}" Padding="8,5" MinHeight="30" IsEnabled="False" />
+      </Grid>
+      <TextBlock Text="拖入谱子导入 · Ctrl / Shift 多选" Style="{StaticResource Muted}" FontSize="10" Margin="6,7,0,0" />
+    </StackPanel>
+  </Grid>
+</Border>
+        <ScrollViewer x:Name="WorkbenchScroll" Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
+          <StackPanel>
+            <Border x:Name="HeroCard" CornerRadius="18" Padding="22,20"><Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,0"><GradientStop Color="#EB152035" Offset="0"/><GradientStop Color="#BB152035" Offset="0.50"/><GradientStop Color="#B0152035" Offset="1"/></LinearGradientBrush></Border.Background>
+              <StackPanel>
+                <TextBlock Text="当前歌曲" Foreground="{DynamicResource AccentBrush}" FontSize="11"/>
+                <TextBlock x:Name="NowTitle" Text="选择一首音乐" FontSize="32" FontWeight="SemiBold" Margin="0,11,0,8" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="NowAuthor" Style="{StaticResource Muted}" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                <WrapPanel Margin="0,14,0,0"><TextBlock x:Name="SongStats" Style="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center" Margin="0,0,12,0"/><Button x:Name="FavoriteButton" Content="收藏" Click="Favorite_Click" Style="{StaticResource Subtle}" Padding="10,5" MinHeight="32" Margin="0,0,8,0"/><Button x:Name="QueueButton" Content="加入队列" Click="Queue_Click" Style="{StaticResource Subtle}" Padding="10,5" MinHeight="32"/></WrapPanel>
+              </StackPanel>
+            </Border>
+            <Grid Margin="0,16,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <ComboBox x:Name="InstrumentCombo" MinHeight="48" MaxDropDownHeight="460" SelectionChanged="Instrument_Changed" AutomationProperties.Name="选择游戏乐器" HorizontalContentAlignment="Stretch">
+                <ComboBox.ItemTemplate><DataTemplate><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Image x:Name="InstrumentIcon" Source="{Binding IconSource}" Width="28" Height="28" Stretch="Uniform" VerticalAlignment="Center"/><TextBlock x:Name="NoIconText" Text="待核验" Visibility="Collapsed" FontSize="8" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/><StackPanel Grid.Column="1" Margin="7,0,0,0"><TextBlock Text="{Binding Name}" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/><TextBlock Text="{Binding Detail}" FontSize="10" Foreground="{DynamicResource MutedBrush}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Detail}"/></StackPanel></Grid><DataTemplate.Triggers><DataTrigger Binding="{Binding IconSource}" Value="{x:Null}"><Setter TargetName="InstrumentIcon" Property="Visibility" Value="Collapsed"/><Setter TargetName="NoIconText" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ComboBox.ItemTemplate>
+              </ComboBox>
+              <Button x:Name="ParametersToggle" Grid.Column="2" Content="演奏调校" Click="ParametersToggle_Click" Style="{StaticResource Subtle}" ToolTip="速度、移调、和弦、轨道与循环"/>
+              <TextBlock x:Name="InstrumentLabel" Visibility="Collapsed"/>
+            </Grid>
+            <Border Background="{DynamicResource PanelBrush}" CornerRadius="14" Padding="16,12">
+              <StackPanel><Grid Margin="0,0,0,8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="96"/></Grid.ColumnDefinitions><TextBlock Text="演奏时间轴" FontSize="13" VerticalAlignment="Center"/><TextBlock x:Name="QuickSpeedLabel" Grid.Column="1" Text="1.00×" Style="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center" Margin="0,0,14,0"/><ComboBox x:Name="ZoomCombo" Grid.Column="2" SelectionChanged="Zoom_Changed" FontSize="11" AutomationProperties.Name="时间轴窗口"><ComboBoxItem Content="20 秒"/><ComboBoxItem Content="40 秒"/><ComboBoxItem Content="整首"/></ComboBox></Grid><local:PianoRoll x:Name="Roll" Height="128" AutomationProperties.Name="音符时间轴"/></StackPanel>
+            </Border>
+            <Border Background="{DynamicResource PanelBrush}" CornerRadius="14" Padding="14,12" Margin="0,14,0,0"><StackPanel><DockPanel Margin="3,0,3,8"><TextBlock Text="键位预览" FontSize="13"/><TextBlock DockPanel.Dock="Right" Text="点按试听 · 不发送按键" Style="{StaticResource Muted}" FontSize="10" HorizontalAlignment="Right"/></DockPanel><UniformGrid x:Name="KeysPanel" Rows="3" Columns="7"/></StackPanel></Border>
+            <Expander x:Name="AdaptationExpander" Header="适配说明与谱子来源" Background="{DynamicResource PanelBrush}" Margin="0,14,0,0" Foreground="{DynamicResource MutedBrush}" FontSize="12"><Border Background="{DynamicResource PanelBrush}" CornerRadius="12" Padding="14" Margin="0,10,0,0"><StackPanel><TextBlock x:Name="ConversionText" Foreground="{DynamicResource AccentBrush}" FontSize="12" TextWrapping="Wrap"/><TextBlock x:Name="WarningsText" Foreground="{StaticResource GoldBrush}" FontSize="12" TextWrapping="Wrap" LineHeight="22" Margin="0,8,0,0"/><TextBlock x:Name="SourceText" Style="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" LineHeight="20" Margin="0,10,0,0"/></StackPanel></Border></Expander>
+          </StackPanel>
+        </ScrollViewer>
+        <Border x:Name="ParameterOverlay" Grid.ColumnSpan="3" Width="286" HorizontalAlignment="Right" Visibility="Collapsed" Panel.ZIndex="20" Background="#FA141E2F" BorderBrush="#32FFFFFF" BorderThickness="1" CornerRadius="16" Padding="18" KeyboardNavigation.TabNavigation="Cycle"><Border.Effect><DropShadowEffect Color="#000000" BlurRadius="24" Opacity="0.3" ShadowDepth="2"/></Border.Effect>
+          <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions><Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="演奏调校" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/><Button Grid.Column="1" Content="重置" Click="Reset_Click" Style="{StaticResource Subtle}" Margin="8,0" Padding="8,4" MinHeight="30"/><Button Grid.Column="2" Content="&#xE711;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource IconButton}" Click="ParametersClose_Click" AutomationProperties.Name="关闭演奏调校"/></Grid><ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel><TextBlock xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Text="每首曲子独立保存参数" Style="{StaticResource Muted}" FontSize="11" Margin="0,7,0,0" />
+          <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="0,20,0,3"><TextBlock Text="播放速度" Style="{StaticResource Muted}" /><TextBlock x:Name="SpeedLabel" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="{DynamicResource AccentBrush}" /></DockPanel>
+          <Slider xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="SpeedSlider" Minimum="0.25" Maximum="3" TickFrequency="0.05" Value="1" ValueChanged="Parameter_Changed" AutomationProperties.Name="播放速度" />
+          <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="0,6,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBox x:Name="BpmBox" AutomationProperties.Name="首段目标 BPM" ToolTip="按原谱首段 BPM 设置倍率，保留原谱的变速关系" /><Button Grid.Column="1" Content="BPM" Click="Bpm_Click" Margin="6,0,0,0" /></Grid>
+          <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="0,17,0,3"><TextBlock Text="移调 / 半音" Style="{StaticResource Muted}" /><TextBlock x:Name="TransposeLabel" DockPanel.Dock="Right" HorizontalAlignment="Right" /></DockPanel><Slider xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TransposeSlider" Minimum="-24" Maximum="24" TickFrequency="1" ValueChanged="Parameter_Changed" AutomationProperties.Name="移调半音" />
+          <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="0,14,0,3"><TextBlock Text="八度偏移" Style="{StaticResource Muted}" /><TextBlock x:Name="OctaveLabel" DockPanel.Dock="Right" HorizontalAlignment="Right" /></DockPanel><Slider xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="OctaveSlider" Minimum="-2" Maximum="2" TickFrequency="1" ValueChanged="Parameter_Changed" AutomationProperties.Name="八度偏移" />
+          <TextBlock xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Text="和弦方式" Style="{StaticResource Label}" /><ComboBox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ChordCombo" SelectionChanged="Option_Changed" AutomationProperties.Name="和弦方式"><ComboBoxItem Content="同时按下" /><ComboBoxItem Content="上行琶音" /><ComboBoxItem Content="下行琶音" /><ComboBoxItem Content="只保留最高旋律音" /></ComboBox>
+          <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="0,16,0,3"><TextBlock Text="最大和弦音数" Style="{StaticResource Muted}" /><TextBlock x:Name="ChordLimitLabel" DockPanel.Dock="Right" HorizontalAlignment="Right" /></DockPanel><Slider xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ChordLimitSlider" Minimum="1" Maximum="10" Value="5" TickFrequency="1" ValueChanged="Parameter_Changed" AutomationProperties.Name="最大和弦音数" />
+          <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="0,14,0,3"><TextBlock Text="琶音间隔" Style="{StaticResource Muted}" /><TextBlock x:Name="StrumLabel" DockPanel.Dock="Right" HorizontalAlignment="Right" /></DockPanel><Slider xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="StrumSlider" Minimum="0" Maximum="150" Value="35" TickFrequency="5" ValueChanged="Parameter_Changed" AutomationProperties.Name="琶音间隔毫秒" />
+          <DockPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="0,14,0,3"><TextBlock Text="拨弦 / 固定按键保持" Style="{StaticResource Muted}" /><TextBlock x:Name="HoldLabel" DockPanel.Dock="Right" HorizontalAlignment="Right" /></DockPanel><Slider xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="HoldSlider" Minimum="20" Maximum="250" Value="65" TickFrequency="5" ValueChanged="Parameter_Changed" AutomationProperties.Name="按键保持毫秒" />
+          <CheckBox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="HoldByScoreCheck" IsChecked="True" Checked="Option_Checked" Unchecked="Option_Checked"><TextBlock Text="延音乐器按谱保持长短音" TextWrapping="Wrap" /></CheckBox>
+          <CheckBox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="NativeChordCheck" IsChecked="True" Checked="Option_Checked" Unchecked="Option_Checked"><TextBlock Text="吉他匹配原谱已有和弦" TextWrapping="Wrap" /></CheckBox>
+          <TextBlock xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Text="半音处理" Style="{StaticResource Label}" /><ComboBox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="AccidentalCombo" SelectionChanged="Option_Changed" AutomationProperties.Name="半音处理"><ComboBoxItem Content="最近的自然音（低音优先）" /><ComboBoxItem Content="向下取自然音" /><ComboBoxItem Content="向上取自然音" /><ComboBoxItem Content="跳过不支持的半音" /></ComboBox>
+          <TextBlock xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Text="超出音域" Style="{StaticResource Label}" /><ComboBox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RangeCombo" SelectionChanged="Option_Changed" AutomationProperties.Name="超出音域处理"><ComboBoxItem Content="按八度折回 C3–B5" /><ComboBoxItem Content="跳过超出音域的音符" /></ComboBox>
+          <TextBlock xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Text="MIDI 轨道" Style="{StaticResource Label}" /><CheckBox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="ExcludeDrums" Content="排除第 10 通道打击乐" IsChecked="True" Checked="Option_Checked" Unchecked="Option_Checked" />
+          <CheckBox x:Name="SmartInterludesCheck" Content="智能衔接前奏/间奏" Checked="Option_Checked" Unchecked="Option_Checked" AutomationProperties.Name="智能衔接前奏/间奏" ToolTip="POP909 默认开启，其他来源默认关闭；关闭后恢复手动选轨。" />
+          <TextBlock Text="仅在长休止处补入原谱声部，不改变选轨与原谱时间；关闭后恢复手动模式。" Style="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,6" />
+          <StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="TracksPanel" />
+          <TextBlock xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Text="段落循环 / 原谱秒数" Style="{StaticResource Label}" /><Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><TextBox x:Name="LoopStartBox" Text="0" AutomationProperties.Name="循环起点秒" LostFocus="Loop_Changed" /><TextBlock Grid.Column="1" Text="–" HorizontalAlignment="Center" VerticalAlignment="Center" /><TextBox x:Name="LoopEndBox" Grid.Column="2" Text="0" AutomationProperties.Name="循环终点秒" LostFocus="Loop_Changed" /></Grid>
+          <CheckBox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="LoopCheck" Content="启用循环（终点 0 为整首）" Checked="Option_Checked" Unchecked="Option_Checked" />
+          <Button xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Content="导出 JSON / MIDI" Click="Export_Click" Margin="0,15,0,8" />
+        </StackPanel></ScrollViewer></Grid>
+        </Border>
+      </Grid>
+      <Border Grid.Row="1" Background="{DynamicResource PanelBrush}" CornerRadius="16" Padding="22" Margin="0,0,0,16"><Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Visibility, ElementName=EditorPage}" Value="Visible"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style><Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="EditorPage" Visibility="Collapsed" Margin="0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="300" /></Grid.ColumnDefinitions><Grid Margin="0,0,22,0"><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions><DockPanel Margin="0,0,0,12"><Button Content="新建文本谱" Click="NewScore_Click" /><Button Content="载入当前曲谱 JSON" Click="LoadEditor_Click" Margin="8,0,0,0" /></DockPanel><TextBox x:Name="EditorBox" Grid.Row="1" AcceptsReturn="True" AcceptsTab="True" FontFamily="Consolas, Microsoft YaHei UI" FontSize="15" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" VerticalContentAlignment="Top" AutomationProperties.Name="谱子文本编辑器" /><StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0"><Button x:Name="EditorPreviewButton" Content="校验并试听" Style="{StaticResource Primary}" Click="EditorPreview_Click" /><Button x:Name="EditorSaveButton" Content="另存到我的曲库" Click="EditorSave_Click" Margin="8,0,0,0" /><TextBlock x:Name="EditorResult" VerticalAlignment="Center" Margin="14,0,0,0" Foreground="{DynamicResource AccentBrush}" TextWrapping="Wrap" /></StackPanel></Grid><ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto"><StackPanel><TextBlock Text="用熟悉的方式写谱" FontSize="20" Margin="0,0,0,18" /><TextBlock Text="键位谱：QWERTYU / ASDFGHJ / ZXCVBNM。默认来源为诗琴；INSTRUMENT=euphonia 可指定「余音」源键位。连续按键逐个演奏，括号表示同拍和弦。" TextWrapping="Wrap" Style="{StaticResource Muted}" /><TextBlock Text="BPM=100&#10;FORMAT=keys&#10;TITLE=我的第一首&#10;A A G G H H G:2&#10;(ADG):2 - A" FontFamily="Consolas, Microsoft YaHei UI" Margin="0,15" Foreground="{StaticResource GoldBrush}" /><TextBlock Text="数字简谱：1–7 是中音，1' 是高八度，1, 是低八度，#1 / b3 表示升降音，0 是休止。:2 为两拍，:0.5 为半拍，| 只作分隔。" TextWrapping="Wrap" Style="{StaticResource Muted}" /><TextBlock Text="FORMAT=numbered&#10;1 1 5 5 6 6 5:2&#10;(135):2 0 1':2" FontFamily="Consolas, Microsoft YaHei UI" Margin="0,15" Foreground="{StaticResource GoldBrush}" /><TextBlock Text="谱头：AUTHOR 是作者 / 编谱者；ARTISTS 用 | 分隔歌手，LANGUAGES 用 | 分隔语种标签，未知填 und；ALBUM 是专辑，EDITION 是版本。工坊保存总是创建新谱，不覆盖原文件。JSON 可精确修改音高、起始时间、时值和轨道。PDF、图片和 MP3 不在本版导入范围内。" TextWrapping="Wrap" Style="{StaticResource Muted}" /></StackPanel></ScrollViewer></Grid>
+    </Border>
+<Border Grid.Row="1" Background="{DynamicResource PanelBrush}" CornerRadius="16" Padding="22" Margin="0,0,0,16"><Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Visibility, ElementName=SettingsPage}" Value="Visible"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style><ScrollViewer xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="SettingsPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Margin="0"><StackPanel MaxWidth="850" HorizontalAlignment="Left">
+      <TextBlock Text="安全优先，再开始演奏。" FontSize="25" FontWeight="SemiBold" Margin="0,0,0,12" /><TextBlock Text="软件只发送所选乐器配置中的按键，不读取游戏内存、不注入进程、不绕过反作弊，也不自动获取管理员权限。普通按键模拟不等于官方许可，使用风险需自行判断。" TextWrapping="Wrap" Style="{StaticResource Muted}" />
+      <TextBlock Text="原神目标窗口" Style="{StaticResource Label}" /><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><ComboBox x:Name="TargetCombo" MinWidth="440" AutomationProperties.Name="原神目标窗口" SelectionChanged="GameAuthorization_Changed" /><Button Grid.Column="1" Content="刷新窗口" Click="RefreshTargets_Click" Margin="10,0,0,0" /></Grid><TextBlock Text="仅识别 YuanShen.exe / GenshinImpact.exe 的可见窗口。窗口存在不代表已打开乐器；云原神和其他进程名不在本版支持范围。" Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,10,0,0" />
+      <TextBlock Text="无倒计时快捷演奏" Style="{StaticResource Label}" />
+      <TextBlock Text="本次启动先启用快捷演奏。之后选好歌曲和乐器，在选定原神前台按 Shift+Enter，松开 Shift 与 Enter 即开始；不会自动切窗口。" Style="{StaticResource Muted}" TextWrapping="Wrap" />
+      <CheckBox x:Name="GameConsent" Unchecked="GameAuthorization_Changed"><TextBlock Text="我了解自动演奏风险；每次快捷启动前会打开对应乐器、关闭聊天与菜单，并核对所选谱子和乐器。" TextWrapping="Wrap" /></CheckBox>
+      <TextBlock Text="Shift+Enter：松键即开始；F8：暂停 / 继续；F9：停止 / 取消待启动。演奏时失焦或按住修饰键会停止。F9 或 Shift+Enter 注册失败不能启用游戏输出。更改窗口/撤销风险授权需重新启用。" Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,0" />
+      <TextBlock Text="播放队列" Style="{StaticResource Label}" /><CheckBox x:Name="QueueAutoCheck" Content="当前谱子试听结束后，继续试听队列下一首（不自动开始游戏按键）" />
+      <TextBlock Text="我的数据" Style="{StaticResource Label}" /><TextBlock x:Name="DataPathText" Style="{StaticResource Muted}" TextWrapping="Wrap" /><Button Content="打开数据文件夹" Click="OpenData_Click" HorizontalAlignment="Left" Margin="0,12,0,0" /><TextBlock Text="原始导入文件副本保存在 originals，标准化谱子在 scores。收藏、队列和每曲参数保存在 library.json。界面不会删除原始文件。" Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,12,0,0" />
+    </StackPanel></ScrollViewer>
+    </Border>
+<Border Grid.Row="1" Background="{DynamicResource PanelBrush}" CornerRadius="16" Padding="22" Margin="0,0,0,16"><Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Visibility, ElementName=HelpPage}" Value="Visible"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style><ScrollViewer xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="HelpPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" Margin="0"><StackPanel MaxWidth="850" HorizontalAlignment="Left">
+      <TextBlock Text="从第一声，到整首歌。" FontSize="25" FontWeight="SemiBold" /><TextBlock Text="01  可用曲名、歌手、语种、专辑、版本或其组合搜索（空格分隔），也支持别名、拼音和首字母。选一首谱子，点“本地试听”；合成声音用于检查节奏，不是原神原始音色。" TextWrapping="Wrap" Margin="0,25,0,0" FontSize="16" />
+      <TextBlock Text="02  在右侧调整速度、移调、和弦与轨道。查看适配报告：被折叠、替换或省略的音符会统计出来。修改参数会停止当前播放，之后请重新试听。" TextWrapping="Wrap" Margin="0,22,0,0" FontSize="16" />
+      <TextBlock Text="03  在“安全与设置”刷新并选定原神窗口、确认风险。选择对应乐器并点“启用快捷演奏”（本次会话一次）。进入游戏打开该乐器、关闭聊天，按 Shift+Enter，松键即开始；没有倒计时。" TextWrapping="Wrap" Margin="0,22,0,0" FontSize="16" />
+      <TextBlock Text="04  F8 暂停 / 继续，F9 随时停止。切出原神会停止；重新演奏需主动再次按 Shift+Enter，不会偷偷恢复后台输入。" TextWrapping="Wrap" Margin="0,22,0,0" FontSize="16" />
+      <TextBlock Text="支持与限制" FontSize="18" Margin="0,28,0,10" /><TextBlock Text="• 乐器按各自键位、音域和和弦规则适配；同键快速重复或高密度和弦可能在游戏中漏音。&#10;• MIDI 保留全局变速时间，打击乐默认排除，建议只选旋律或少量伴奏轨道。&#10;• TXT 支持键位谱和本工具约定的数字简谱，不是任意网页文本自动识别。&#10;• JSON 支持琴伴 version=1；songNotes 按原神 21 键索引解读，不能通用保证光遇等其他游戏格式。&#10;• 本地试听最多渲染前 10 分钟；游戏谱子上限 30 分钟 / 100,000 音 / 16 MB。&#10;• 鼓类键位待核验，暂不输出；乐器资料与图标来源见随包说明。新乐器音域和快捷启动仍需游戏内验收。&#10;• 长短音与休止来自谱面时值；等拍且缺少时值的输入不能自动还原原曲节奏。" Style="{StaticResource Muted}" TextWrapping="Wrap" LineHeight="27" />
+      <TextBlock Text="内置 30 份教学示范" FontSize="18" Margin="0,26,0,10" /><TextBlock Text="包含传统旋律主题短编、原创小曲和演奏练习；不是 30 首热门商业歌曲的完整授权曲库。你可以批量导入自己的收藏。所有处理在本地进行，不向服务器上传谱子。" Style="{StaticResource Muted}" TextWrapping="Wrap" />
+      <TextBlock Text="独立 GPL 派生工作台；源代码和上游说明随项目提供。不是 Auto MIDI Player 或原神官方发行版。" Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,28,0,25" />
+    </StackPanel></ScrollViewer>
+  </Border>
+      <ScrollViewer x:Name="AppearancePage" Grid.Row="1" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,16">
+        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="310"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <Border Background="{DynamicResource PanelBrush}" CornerRadius="16" Padding="18"><StackPanel>
+            <TextBlock Text="选择背景" FontSize="16" FontWeight="SemiBold"/><TextBlock Text="内置图片，或你的本地收藏。" Style="{StaticResource Muted}" FontSize="12" Margin="0,6,0,14"/>
+            <ListBox x:Name="BackgroundPresetList" SelectionChanged="AppearancePreset_Changed" AutomationProperties.Name="内置背景选择" MaxHeight="280"><ListBox.ItemTemplate><DataTemplate><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="84"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Border Width="76" Height="48" CornerRadius="6" Background="#121C2D" ClipToBounds="True"><Image Source="{Binding Thumbnail}" Stretch="UniformToFill"/></Border><StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center"><TextBlock Text="{Binding Name}" FontSize="13"/><TextBlock Text="{Binding Detail}" Style="{StaticResource Muted}" FontSize="10" Margin="0,5,0,0" TextWrapping="Wrap"/></StackPanel></Grid></DataTemplate></ListBox.ItemTemplate></ListBox>
+            <Border x:Name="BackgroundDropZone" AllowDrop="True" Drop="Background_Drop" BorderBrush="#456D84AA" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,16,0,0"><StackPanel><Button x:Name="UploadBackgroundButton" Content="选择本地图片…" Click="BackgroundUpload_Click" Style="{StaticResource Primary}"/><TextBlock Text="也可拖入一张图片&#10;PNG / JPG / BMP · 最大 20 MB" Style="{StaticResource Muted}" FontSize="10" TextAlignment="Center" LineHeight="18" Margin="0,10,0,0"/></StackPanel></Border>
+            <TextBlock x:Name="BackgroundNameText" Style="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" LineHeight="20" Margin="0,14,0,10"/>
+            <Button x:Name="BackgroundResetButton" Content="恢复默认外观" Click="BackgroundReset_Click" Style="{StaticResource Subtle}" HorizontalAlignment="Left"/><TextBlock Text="只在本地复制图片，不上传；不会修改原图。" Style="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap" LineHeight="18" Margin="0,14,0,0"/>
+          </StackPanel></Border>
+          <StackPanel Grid.Column="2">
+            <Border CornerRadius="16" Background="#121C2D" ClipToBounds="True"><Grid x:Name="AppearancePreviewSurface" Height="220" SizeChanged="AppearancePreview_SizeChanged"><local:WallpaperView x:Name="AppearancePreviewImage" IsHitTestVisible="False"/><Border x:Name="PreviewWallpaperMask" Background="#0B101B" Opacity="0.32" IsHitTestVisible="False"/><Border VerticalAlignment="Bottom" Background="#E9131C2B" Padding="20,14"><StackPanel><TextBlock x:Name="PreviewBackgroundTitle" Text="星夜" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="实时预览 · 图片等比显示" Style="{StaticResource Muted}" FontSize="11" Margin="0,5,0,0"/></StackPanel></Border></Grid></Border>
+            <Border Background="{DynamicResource PanelBrush}" CornerRadius="16" Padding="20" Margin="0,16,0,0"><StackPanel>
+              <TextBlock Text="背景适配" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="文字保持清晰，背景只负责氛围。" Style="{StaticResource Muted}" FontSize="11" Margin="0,6,0,10"/>
+              <ComboBox x:Name="BackgroundFitCombo" SelectionChanged="AppearanceFit_Changed" AutomationProperties.Name="背景图片适配"><ComboBoxItem Content="等比铺满（允许裁切）"/><ComboBoxItem Content="完整显示（允许留边）"/></ComboBox>
+              <DockPanel Margin="0,16,0,3"><TextBlock Text="背景暗化" Style="{StaticResource Muted}"/><TextBlock x:Name="DarknessValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Style="{StaticResource Muted}"/></DockPanel><Slider x:Name="DarknessSlider" Minimum="0.20" Maximum="0.82" TickFrequency="0.01" ValueChanged="Appearance_Changed" AutomationProperties.Name="背景暗化程度"/>
+              <DockPanel Margin="0,12,0,3"><TextBlock Text="背景模糊" Style="{StaticResource Muted}"/><TextBlock x:Name="BlurValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Style="{StaticResource Muted}"/></DockPanel><Slider x:Name="BlurSlider" Minimum="0" Maximum="18" TickFrequency="1" ValueChanged="Appearance_Changed" AutomationProperties.Name="背景模糊像素"/>
+              <DockPanel Margin="0,12,0,3"><TextBlock Text="面板实度" Style="{StaticResource Muted}"/><TextBlock x:Name="PanelOpacityValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Style="{StaticResource Muted}"/></DockPanel><Slider x:Name="PanelOpacitySlider" Minimum="0.78" Maximum="0.97" TickFrequency="0.01" ValueChanged="Appearance_Changed" AutomationProperties.Name="界面面板不透明度"/>
+              <DockPanel Margin="0,12,0,3"><TextBlock Text="主体横向位置" Style="{StaticResource Muted}"/><TextBlock x:Name="FocusXValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Style="{StaticResource Muted}"/></DockPanel><Slider x:Name="FocusXSlider" Minimum="0" Maximum="1" TickFrequency="0.01" ValueChanged="Appearance_Changed" AutomationProperties.Name="背景主体横向位置"/>
+              <DockPanel Margin="0,12,0,3"><TextBlock Text="主体纵向位置" Style="{StaticResource Muted}"/><TextBlock x:Name="FocusYValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Style="{StaticResource Muted}"/></DockPanel><Slider x:Name="FocusYSlider" Minimum="0" Maximum="1" TickFrequency="0.01" ValueChanged="Appearance_Changed" AutomationProperties.Name="背景主体纵向位置"/>
+            </StackPanel></Border>
+          </StackPanel>
+        </Grid>
+      </ScrollViewer>
+    </Grid>
+    <Border Grid.Row="1" Grid.Column="1" Background="#F0101929" BorderBrush="#18FFFFFF" BorderThickness="0,1,0,0" Padding="24,12,24,10">
+      <Grid><Grid.RowDefinitions><RowDefinition Height="28"/><RowDefinition Height="*"/><RowDefinition Height="19"/></Grid.RowDefinitions>
+        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition Width="*"/><ColumnDefinition Width="40"/></Grid.ColumnDefinitions><TextBlock x:Name="PositionLabel" Text="00:00" Style="{StaticResource Muted}" FontFamily="Segoe UI" FontSize="11" VerticalAlignment="Center"/><Slider x:Name="ProgressSlider" Grid.Column="1" Minimum="0" Maximum="1" ValueChanged="Progress_Changed" PreviewMouseLeftButtonDown="Progress_MouseDown" PreviewMouseLeftButtonUp="Progress_MouseUp" AutomationProperties.Name="播放进度" Margin="10,0"/><TextBlock x:Name="DurationLabel" Grid.Column="2" Text="00:00" Style="{StaticResource Muted}" FontFamily="Segoe UI" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid>
+        <Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="*" MinWidth="130"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="110"/></Grid.ColumnDefinitions>
+          <StackPanel VerticalAlignment="Center" Margin="0,0,12,0"><TextBlock x:Name="FooterTitle" Text="尚未选曲" FontSize="13" TextTrimming="CharacterEllipsis"/><TextBlock x:Name="ModeLabel" Text="安全模式 · 仅本地试听" Foreground="{DynamicResource AccentBrush}" FontSize="10" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/></StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,18,0"><Button Content="&#xE892;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource IconButton}" ToolTip="上一首" AutomationProperties.Name="上一首" Click="Previous_Click" Margin="0,0,6,0"/><Button x:Name="PreviewButton" Content="本地试听" Style="{StaticResource Primary}" Click="Preview_Click" Margin="0,0,6,0"/><Button x:Name="PauseButton" Content="暂停" Click="Pause_Click" Style="{StaticResource Subtle}" Margin="0,0,6,0"/><Button x:Name="StopButton" Content="停止" Click="Stop_Click" Style="{StaticResource Subtle}" Margin="0,0,6,0"/><Button x:Name="GameButton" Content="启用快捷演奏" Foreground="{StaticResource GoldBrush}" Click="Game_Click" Style="{StaticResource Subtle}" Margin="0,0,6,0"/><Button Content="&#xE893;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource IconButton}" ToolTip="下一首" AutomationProperties.Name="下一首" Click="Next_Click"/></StackPanel>
+          <StackPanel Grid.Column="2" VerticalAlignment="Center"><TextBlock Text="试听音量" Style="{StaticResource Muted}" FontSize="10"/><Slider x:Name="VolumeSlider" Minimum="0" Maximum="1" Value="0.65" TickFrequency="0.05" ValueChanged="Volume_Changed" AutomationProperties.Name="试听音量"/></StackPanel>
+        </Grid>
+        <TextBlock x:Name="StatusText" Grid.Row="2" Text="就绪 · 不会自动向游戏发送按键" Style="{StaticResource Muted}" FontSize="10" TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom"/>
+      </Grid>
+    </Border>
+  </Grid>
+</Grid>
+</Window>
+

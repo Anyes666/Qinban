@@ -1,0 +1,20 @@
+{
+  "sourceVersion": "17.0.0",
+  "sourceUrl": "https://www.unicode.org/Public/17.0.0/ucd/Unihan.zip",
+  "licenseUrl": "https://www.unicode.org/license.txt",
+  "retrievedAtUtc": "2026-10-04T18:05:02.458490+00:00",
+  "archiveSha256": "f7a48b2b545acfaa77b2d607ae28747404ce02baefee16396c5d2d7a8ef34b5e",
+  "pinyinEntries": 44348,
+  "variantEntries": 6929,
+  "limitations": "primary reading/variant only; contextual polyphony must use aliases",
+  "generated": [
+    {
+      "path": "QinBan.Core\\Resources\\pinyin-17.tsv",
+      "sha256": "c8ce9880276bc5de990771da173a9b1fcb52db76c6566f6ff9de6e1173b4586a"
+    },
+    {
+      "path": "QinBan.Core\\Resources\\simplified-17.tsv",
+      "sha256": "1cc0e0752aeec7238690a160eff0900bcc7c547c5fc76cc43e1944917eb015e9"
+    }
+  ]
+}

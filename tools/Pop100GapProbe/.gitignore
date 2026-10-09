@@ -1,0 +1,6 @@
+﻿.cli-home/
+.nuget/
+.tmp/
+artifacts/
+core-tests/
+wave-staging/

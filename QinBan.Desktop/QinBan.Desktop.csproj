@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><Version>0.4.2</Version>
+    <AssemblyName>QinBan</AssemblyName><Product>琴伴 · 原神演奏工作台</Product>
+    <Description>Offline Genshin music workbench; independent GPL derivative, not an official Auto MIDI Player release.</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../QinBan.Core/QinBan.Core.csproj" /></ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets/Instruments/*.png" />
+    <Resource Include="Assets/Backgrounds/*.jpg" />
+    <Content Include="../tools/background-assets.json" Link="background-assets.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../Songs/*.json" Link="Songs/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../Songs/catalog.db" Link="Songs/catalog.db" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('../Songs/catalog.db')" />
+    <Content Include="../tools/search-data-manifest.json" Link="search-data-manifest.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../licenses/*" Link="licenses/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../tools/instrument-assets.json" Link="instrument-assets.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../LICENSE" Link="LICENSE" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../QINBAN-NOTICES.md" Link="QINBAN-NOTICES.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../SCORE-LIBRARY.md" Link="曲库与迁移.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../SOURCE-INTAKE.md" Link="谱源准入.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../APPEARANCE.md" Link="外观与背景.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../README-QINBAN.md" Link="使用说明.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

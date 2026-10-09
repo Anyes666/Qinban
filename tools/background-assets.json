@@ -1,0 +1,36 @@
+[
+  {
+    "id": "night",
+    "name": "星夜",
+    "path": "Assets/Backgrounds/night.jpg",
+    "originalPixels": [
+      1672,
+      941
+    ],
+    "bundledPixels": [
+      1672,
+      941
+    ],
+    "sha256": "0DB33737D35B96DDE575ABC48F2B7A4E53009363D8E58AF0C6CA7965BC33E2D0",
+    "source": "User-provided image attachment, October 4, 2026.",
+    "rights": "Original artwork rights not verified. For requested local personal UI only; not claimed GPL, CC0 or public redistribution rights.",
+    "privacy": "Bundled derivative contains pixels only; original file and metadata were not modified or uploaded."
+  },
+  {
+    "id": "blue",
+    "name": "霓蓝",
+    "path": "Assets/Backgrounds/blue.jpg",
+    "originalPixels": [
+      2383,
+      1420
+    ],
+    "bundledPixels": [
+      1920,
+      1144
+    ],
+    "sha256": "D8967550EF446F1DC3BFC0E2DDA0C076A619F0E02D67381AAF88ACEBF3E50B7D",
+    "source": "User-provided image attachment, October 4, 2026.",
+    "rights": "Original artwork rights not verified. For requested local personal UI only; not claimed GPL, CC0 or public redistribution rights.",
+    "privacy": "Bundled derivative contains pixels only; original file and metadata were not modified or uploaded."
+  }
+]

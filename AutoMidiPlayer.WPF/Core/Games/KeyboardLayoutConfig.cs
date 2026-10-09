@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using AutoMidiPlayer.WPF.Core;
+
+namespace AutoMidiPlayer.WPF.Core.Instruments;
+
+public class KeyboardLayoutConfig
+{
+    public string Name { get; }
+
+    public IReadOnlyList<Keyboard.KeyStroke> KeyStrokes { get; }
+
+    /// <summary>
+    /// Optional keys reserved for pre-composed chord pads. These do not correspond to entries in
+    /// <see cref="KeyStrokes"/>, which remain a one-key-per-note mapping.
+    /// </summary>
+    public IReadOnlyList<Keyboard.KeyStroke> ChordKeyStrokes { get; }
+
+    public IReadOnlyList<VirtualKeyCode> Keys => KeyStrokes.Select(k => k.Key).ToArray();
+
+    /// <summary>
+    /// Optional virtual key code for the sustain pedal in this layout.
+    /// When set, MIDI CC 64 (Damper Pedal) events will press/release this key.
+    /// For Roblox, this is typically VirtualKeyCode.SPACE.
+    /// </summary>
+    public VirtualKeyCode? SustainKey { get; }
+
+    /// <summary>
+    /// Optional virtual key code for the sostenuto pedal (CC 66).
+    /// </summary>
+    public VirtualKeyCode? SostenutoKey { get; }
+
+    /// <summary>
+    /// Optional virtual key code for the una corda / soft pedal (CC 67).
+    /// </summary>
+    public VirtualKeyCode? UnaCordaKey { get; }
+
+    public KeyboardLayoutConfig(
+        string name, 
+        IReadOnlyList<VirtualKeyCode> keyCodes, 
+        VirtualKeyCode? sustainKey = null,
+        VirtualKeyCode? sostenutoKey = null,
+        VirtualKeyCode? unaCordaKey = null,
+        IReadOnlyList<Keyboard.KeyStroke>? chordKeyStrokes = null)
+    {
+        Name = name;
+        KeyStrokes = keyCodes.Select(key => new Keyboard.KeyStroke(key)).ToArray();
+        ChordKeyStrokes = chordKeyStrokes ?? Array.Empty<Keyboard.KeyStroke>();
+        SustainKey = sustainKey;
+        SostenutoKey = sostenutoKey;
+        UnaCordaKey = unaCordaKey;
+    }
+
+    public KeyboardLayoutConfig(
+        string name, 
+        IReadOnlyList<Keyboard.KeyStroke> keyStrokes, 
+        VirtualKeyCode? sustainKey = null,
+        VirtualKeyCode? sostenutoKey = null,
+        VirtualKeyCode? unaCordaKey = null,
+        IReadOnlyList<Keyboard.KeyStroke>? chordKeyStrokes = null)
+    {
+        Name = name;
+        KeyStrokes = keyStrokes;
+        ChordKeyStrokes = chordKeyStrokes ?? Array.Empty<Keyboard.KeyStroke>();
+        SustainKey = sustainKey;
+        SostenutoKey = sostenutoKey;
+        UnaCordaKey = unaCordaKey;
+    }
+
+    /// <summary>
+    /// Initialize a keyboard layout from a collection of string elements.
+    /// 
+    /// Each element can be:
+    ///   - Single character: "a", "b", "1", "!" → uses existing character-to-keystroke map
+    ///   - Ctrl prefix: "^a", "^b", "^1" → Ctrl+key modifier
+    ///   - Ctrl+Shift: "^A", "^B", "^C" → Ctrl+Shift+key modifiers
+    ///   - Special: "^" alone → Shift+6 (the caret character itself, not a Ctrl modifier)
+    /// 
+    /// Examples:
+    ///   new KeyboardLayoutConfig("Standard", ["n", "m", ",", ".", "/", "h", "j", "k", "l", ";", "y", "u", "i", "o", "p"])
+    ///   new KeyboardLayoutConfig("Extended", ["^n", "^m", "^,", "^.", "^/", "^h", "^j", "^k", "^l", "^;", "^y", "^u", "^i", "^o", "^p"])
+    ///   new KeyboardLayoutConfig("Mixed", ["n", "^n", "m", "^m", ...])
+    /// </summary>
+    public KeyboardLayoutConfig(
+        string name, 
+        IReadOnlyList<string> keys, 
+        VirtualKeyCode? sustainKey = null,
+        VirtualKeyCode? sostenutoKey = null,
+        VirtualKeyCode? unaCordaKey = null,
+        IReadOnlyList<Keyboard.KeyStroke>? chordKeyStrokes = null)
+    {
+        Name = name;
+        KeyStrokes = Keyboard.ParseLayoutKeys(keys);
+        ChordKeyStrokes = chordKeyStrokes ?? Array.Empty<Keyboard.KeyStroke>();
+        SustainKey = sustainKey;
+        SostenutoKey = sostenutoKey;
+        UnaCordaKey = unaCordaKey;
+    }
+}
